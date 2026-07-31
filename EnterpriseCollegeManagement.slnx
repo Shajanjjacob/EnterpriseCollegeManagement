@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="EnterpriseCollegeManagement.AcademicService/EnterpriseCollegeManagement.AcademicService.csproj" />
+  <Project Path="EnterpriseCollegeManagement.ApiGateway/EnterpriseCollegeManagement.ApiGateway.csproj" />
+  <Project Path="EnterpriseCollegeManagement.AssignmentService/EnterpriseCollegeManagement.AssignmentService.csproj" />
+  <Project Path="EnterpriseCollegeManagement.IdentityService/EnterpriseCollegeManagement.IdentityService.csproj" />
+  <Project Path="EnterpriseCollegeManagement.Portal/EnterpriseCollegeManagement.Portal.csproj" />
+  <Project Path="EnterpriseCollegeManagement.StudentService/EnterpriseCollegeManagement.StudentService.csproj" />
+  <Project Path="EnterpriseCollegeManagement/EnterpriseCollegeManagement.csproj" />
+</Solution>

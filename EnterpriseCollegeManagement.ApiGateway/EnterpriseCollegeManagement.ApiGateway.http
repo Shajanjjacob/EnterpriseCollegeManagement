@@ -1,0 +1,6 @@
+@EnterpriseCollegeManagement.ApiGateway_HostAddress = http://localhost:5120
+
+GET {{EnterpriseCollegeManagement.ApiGateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

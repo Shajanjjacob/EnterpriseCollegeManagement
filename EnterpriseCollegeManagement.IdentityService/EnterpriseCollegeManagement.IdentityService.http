@@ -1,0 +1,6 @@
+@EnterpriseCollegeManagement.IdentityService_HostAddress = http://localhost:5087
+
+GET {{EnterpriseCollegeManagement.IdentityService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
