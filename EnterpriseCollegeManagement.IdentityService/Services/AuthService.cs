@@ -21,9 +21,43 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             _mapper = mapper;
            _logger = logger;
         }
-        public Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
+        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation("Login attempt started for email: {Email}", request.Email);
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                _logger.LogWarning("Login failed. No user found with email: {Email}", request.Email);
+                return new LoginResponseDto 
+                {
+                    
+                    Success = false,
+                    Message = "Invalid email or password."
+                };
+
+            }
+            _logger.LogInformation("Verifying password for user: {Email}", request.Email);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Login failed. Invalid password for email: {Email}", request.Email);
+                return new LoginResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid email or password."
+                };
+            }
+
+            _logger.LogInformation("User {Email} logged in successfully.", request.Email);
+            return new LoginResponseDto
+            {
+                Success = true,
+                Message = "Login successful."
+            };
+
+
         }
 
         public Task LogoutAsync()

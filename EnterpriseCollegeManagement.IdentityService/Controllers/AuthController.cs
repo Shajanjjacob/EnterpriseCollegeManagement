@@ -1,6 +1,7 @@
 ﻿using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Requests;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using EnterpriseCollegeManagement.IdentityService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,6 +27,19 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
             if (!result.Success)
             {
                 return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequestDto request)
+        {
+            var result = await _authService.LoginAsync(request);
+            if (!result.Success)
+            {
+                return Unauthorized(result);
             }
             return Ok(result);
         }
