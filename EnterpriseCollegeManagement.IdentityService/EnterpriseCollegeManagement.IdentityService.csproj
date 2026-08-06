@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <Folder Include="Middleware\" />
-    <Folder Include="Configurations\" />
     <Folder Include="Helpers\" />
     <Folder Include="Constants\" />
     <Folder Include="Extensions\" />

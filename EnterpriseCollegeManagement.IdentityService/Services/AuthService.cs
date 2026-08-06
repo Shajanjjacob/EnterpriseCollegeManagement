@@ -4,6 +4,7 @@ using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Responses;
 using EnterpriseCollegeManagement.IdentityService.Entities;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EnterpriseCollegeManagement.IdentityService.Services
 {
@@ -14,12 +15,18 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
-        public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IMapper mapper , ILogger<AuthService> logger)
+
+        private readonly ITokenService _tokenService;
+
+
+        public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
+            IMapper mapper , ILogger<AuthService> logger , ITokenService tokenService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
-           _logger = logger;
+            _logger = logger;
+            _tokenService = tokenService;
         }
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
@@ -50,13 +57,20 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 };
             }
 
+            
+
             _logger.LogInformation("User {Email} logged in successfully.", request.Email);
+
+
+            var tokenResult =  await _tokenService.GenerateTokenAsync(user);
+
             return new LoginResponseDto
             {
                 Success = true,
-                Message = "Login successful."
+                Message = "Login successful.", 
+                Token = tokenResult.Token,
+                Expiration = tokenResult.Expiration,
             };
-
 
         }
 
@@ -119,5 +133,12 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 Message = "User registered successfully."
             };
         }
+
+        #region
+
+      
+
+
+        #endregion
     }
 }
