@@ -9,11 +9,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+//serilog
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .WriteTo.Console().WriteTo.File( "Logs/application-.txt",  rollingInterval: RollingInterval.Day,
+            outputTemplate:
+                "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
 
 //database register
 builder.Services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DbContext")));
