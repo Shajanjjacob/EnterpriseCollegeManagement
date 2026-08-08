@@ -2,9 +2,11 @@
 using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Requests;
 using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Responses;
 using EnterpriseCollegeManagement.IdentityService.Entities;
+using EnterpriseCollegeManagement.IdentityService.Exceptions;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnterpriseCollegeManagement.IdentityService.Services
 {
@@ -36,12 +38,8 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             if (user == null)
             {
                 _logger.LogWarning("Login failed. No user found with email: {Email}", request.Email);
-                return new LoginResponseDto 
-                {
-                    
-                    Success = false,
-                    Message = "Invalid email or password."
-                };
+
+                throw new UnauthorizedException("Invalid email or password.");
 
             }
             _logger.LogInformation("Verifying password for user: {Email}", request.Email);
@@ -50,11 +48,8 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             if (!result.Succeeded)
             {
                 _logger.LogWarning("Login failed. Invalid password for email: {Email}", request.Email);
-                return new LoginResponseDto
-                {
-                    Success = false,
-                    Message = "Invalid email or password."
-                };
+
+                throw new UnauthorizedException("Invalid email or password.");
             }
 
             
@@ -87,23 +82,17 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             if (existingUser != null)
             {
                 _logger.LogWarning("Registration failed. Email already exists: {Email}", request.Email);
-                return new RegisterResponseDto
-                { 
-                    Success = false,
-                    Message = "Email already exists."
 
-                };
+
+                throw new ConflictException("Email already exists.");
 
             }
             if(request.Password != request.ConfirmPassword)
             {
                 _logger.LogWarning("Password mismatch for {Email}", request.Email);
-                return new RegisterResponseDto
-                {
-                    Success = false,
-                    Message = "Password and Confirm Password do not match."
 
-                };
+
+                throw new BadRequestException("Password and Confirm Password do not match.");
 
             }
 
@@ -115,13 +104,11 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
             if (!result.Succeeded)
             {
-                _logger.LogWarning("Registration failed for {Email}. Errors: {Errors}", request.Email,
-                    string.Join(",", result.Errors.Select(x => x.Description)));
-                return new RegisterResponseDto
-                {
-                    Success = false,
-                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
-                };
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+
+                _logger.LogWarning( "Registration failed for {Email}. Errors: {Errors}", request.Email, errors);
+
+                throw new BadRequestException(errors);
             }
 
             _logger.LogInformation("User {Email} registered successfully.", request.Email);

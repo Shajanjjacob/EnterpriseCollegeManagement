@@ -2,6 +2,7 @@ using EnterpriseCollegeManagement.IdentityService.Configurations;
 using EnterpriseCollegeManagement.IdentityService.Data;
 using EnterpriseCollegeManagement.IdentityService.Entities;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
+using EnterpriseCollegeManagement.IdentityService.Middleware;
 using EnterpriseCollegeManagement.IdentityService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -67,6 +68,9 @@ var app = builder.Build();
 
 
 // Configure the HTTP request pipeline.
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

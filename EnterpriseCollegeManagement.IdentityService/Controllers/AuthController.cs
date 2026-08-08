@@ -24,10 +24,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         {
             var result = await _authService.RegisterAsync(request);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
+           
             return Ok(result);
         }
 
@@ -37,10 +34,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         public async Task<IActionResult> Login(LoginRequestDto request)
         {
             var result = await _authService.LoginAsync(request);
-            if (!result.Success)
-            {
-                return Unauthorized(result);
-            }
+           
             return Ok(result);
         }
     }
