@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EnterpriseCollegeManagement.IdentityService.DTOs.Audit.Responses;
 using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Requests;
 using EnterpriseCollegeManagement.IdentityService.Entities;
 
@@ -9,6 +10,8 @@ namespace EnterpriseCollegeManagement.IdentityService.Mappings
         public MappingProfile()
         {
             CreateMap<RegisterRequestDto, ApplicationUser>();
+
+            CreateMap<AuditLog, AuditLogResponseDto>();
         }
     }
 }

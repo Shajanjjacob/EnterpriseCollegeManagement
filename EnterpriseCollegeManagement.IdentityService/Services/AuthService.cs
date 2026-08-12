@@ -20,15 +20,18 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
         private readonly ITokenService _tokenService;
 
+        private readonly IAuditService _auditService;
+
 
         public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-            IMapper mapper , ILogger<AuthService> logger , ITokenService tokenService)
+            IMapper mapper , ILogger<AuthService> logger , ITokenService tokenService ,IAuditService auditService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
             _logger = logger;
             _tokenService = tokenService;
+            _auditService = auditService;
         }
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
@@ -52,12 +55,31 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 throw new UnauthorizedException("Invalid email or password.");
             }
 
+           await _auditService.LogAsync(
+                user.Id,
+                "Register",
+                "ApplicationUser",
+                user.Id,
+                "User registered successfully."
+                );
+
             
 
             _logger.LogInformation("User {Email} logged in successfully.", request.Email);
 
 
             var tokenResult =  await _tokenService.GenerateTokenAsync(user);
+
+            await _auditService.LogAsync(
+
+                user.Id,
+                "Login",
+                "ApplicationUser",
+                user.Id,
+                "User logged in successfully."
+
+
+                );
 
             return new LoginResponseDto
             {
@@ -66,6 +88,8 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 Token = tokenResult.Token,
                 Expiration = tokenResult.Expiration,
             };
+
+           
 
         }
 
