@@ -19,25 +19,35 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
         private readonly JwtSettings _jwtSettings;
         private readonly ILogger<TokenService> _logger;
 
-        public TokenService(ILogger<TokenService> logger, IOptions<JwtSettings> options)
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public TokenService(ILogger<TokenService> logger, IOptions<JwtSettings> options, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
            _jwtSettings = options.Value;
+            _userManager = userManager;
         }
 
         public async Task<TokenResultDto> GenerateTokenAsync(ApplicationUser user)
         {
             _logger.LogInformation("Generating JWT token for user: {Email}", user.Email);
 
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub , user.Id),
-                new Claim(JwtRegisteredClaimNames.Email , user.Email!),
-                new Claim(JwtRegisteredClaimNames.Jti ,Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name,user.UserName!)
+            var roles = await  _userManager.GetRolesAsync(user);
 
-            };
+            var claims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub , user.Id),
+                    new Claim(JwtRegisteredClaimNames.Email , user.Email!),
+                    new Claim(JwtRegisteredClaimNames.Jti ,Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name,user.UserName!)
+                 };
+
+            foreach(var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
 
             var SecretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
 

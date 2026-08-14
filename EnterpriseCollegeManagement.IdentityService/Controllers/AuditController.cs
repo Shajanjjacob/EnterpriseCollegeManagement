@@ -18,6 +18,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         }
 
         [HttpGet("user/{userId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserHistory(
      string userId,
      [FromQuery] AuditHistoryFilterDto filter)
