@@ -122,6 +122,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
             var newUser = _mapper.Map<ApplicationUser>(request);
             newUser.UserName = request.Email;
+           
             _logger.LogInformation("Creating user {Email}", request.Email);
 
             var result = await _userManager.CreateAsync(newUser, request.Password);
@@ -135,6 +136,23 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 throw new BadRequestException(errors);
             }
 
+            //default role assign
+
+            var roleResult = await _userManager.AddToRoleAsync(newUser, "Student");
+
+            if (!roleResult.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    roleResult.Errors.Select(e => e.Description));
+
+                _logger.LogError(
+                    "Failed to assign Student role to user {UserId}. Errors: {Errors}",
+                    newUser.Id,
+                    errors);
+
+                throw new BadRequestException("User created but failed to assign default Student role.");
+            }
             _logger.LogInformation("User {Email} registered successfully.", request.Email);
 
 
