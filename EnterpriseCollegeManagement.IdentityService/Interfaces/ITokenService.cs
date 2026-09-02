@@ -7,5 +7,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Interfaces
     public interface ITokenService
     {
         Task<TokenResultDto> GenerateTokenAsync(ApplicationUser user);
+
+        Task<TokenResultDto> RefreshTokenAsync(string refreshToken);
     }
 }

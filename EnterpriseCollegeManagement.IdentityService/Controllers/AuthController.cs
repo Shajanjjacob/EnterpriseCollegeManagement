@@ -12,10 +12,14 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService  _authService;
+        private readonly ITokenService _tokenService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ITokenService tokenService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _tokenService = tokenService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -35,6 +39,16 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         {
             var result = await _authService.LoginAsync(request);
            
+            return Ok(result);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            _logger.LogInformation("Refresh token endpoint called.");
+
+            var result = await _tokenService.RefreshTokenAsync(request.RefreshToken);
+
             return Ok(result);
         }
     }

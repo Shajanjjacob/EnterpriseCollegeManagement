@@ -12,5 +12,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Data
         }
 
         public  DbSet<AuditLog> AuditLogs { get; set; }
+
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

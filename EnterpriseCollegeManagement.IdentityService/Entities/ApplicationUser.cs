@@ -13,5 +13,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Entities
         public DateTime? UpdatedDate { get; set; } = DateTime.UtcNow;
 
         public bool IsDeleted { get; set; } = false;
+
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }
