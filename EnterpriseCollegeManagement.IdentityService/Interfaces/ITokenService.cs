@@ -9,5 +9,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Interfaces
         Task<TokenResultDto> GenerateTokenAsync(ApplicationUser user);
 
         Task<TokenResultDto> RefreshTokenAsync(string refreshToken);
+
+        Task LogoutAsync(string refreshToken);
     }
 }

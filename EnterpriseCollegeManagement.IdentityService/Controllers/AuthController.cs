@@ -51,5 +51,17 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDto request)
+        {
+            await _tokenService.LogoutAsync(request.RefreshToken);
+            return Ok(new
+            {
+                Success = true,
+                Message = "Logged out successfully."
+            });
+        }
     }
 }

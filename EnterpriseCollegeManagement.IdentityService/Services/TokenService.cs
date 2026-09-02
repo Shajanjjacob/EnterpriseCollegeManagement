@@ -103,6 +103,34 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             };
         }
 
+        public async Task LogoutAsync(string refreshToken)
+        {
+            _logger.LogInformation("Logout request received.");
+
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(x => x.Token == refreshToken);
+
+            if(storedToken == null)
+            {
+                _logger.LogWarning("Logout failed. Refresh token not found.");
+
+                throw new UnauthorizedException("Invalid refresh token.");
+            }
+
+            if (storedToken.IsRevoked)
+            {
+                _logger.LogWarning( "Logout requested for already revoked refresh token. UserId: {UserId}", storedToken.UserId);
+
+                throw new UnauthorizedException("Refresh token has already been revoked.");
+            }
+            
+            storedToken.IsRevoked = true;
+            storedToken.RevokedDate = DateTime.UtcNow;
+
+           await _context.SaveChangesAsync();
+            _logger.LogInformation( "Refresh token revoked successfully. UserId: {UserId}", storedToken.UserId);
+        }
+
         public async Task<TokenResultDto> RefreshTokenAsync(string refreshToken)
         {
             _logger.LogInformation("Refresh token request received.");
