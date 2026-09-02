@@ -43,9 +43,31 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
             return Ok(result);
         }
 
-    
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+
+        public async Task<IActionResult> GetUsers()
+        {
+            var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(actorUserId))
+            {
+                _logger.LogWarning( "Unable to identify authenticated Admin user.");
+                return Unauthorized();
+            }
+            _logger.LogInformation( "Get users request started. AdminUserId: {AdminUserId}",actorUserId);
 
 
-        
+
+            var result = await _userService.GetUsersAsync(actorUserId);
+            _logger.LogInformation(  "Get users request completed. AdminUserId: {AdminUserId}, UserCount: {UserCount}", actorUserId, result.Count);
+
+
+            return Ok(result);
+        }
+
+
+
+
+
     }
 }

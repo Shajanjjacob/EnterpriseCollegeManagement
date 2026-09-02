@@ -5,6 +5,7 @@ using EnterpriseCollegeManagement.IdentityService.Entities;
 using EnterpriseCollegeManagement.IdentityService.Exceptions;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnterpriseCollegeManagement.IdentityService.Services
 {
@@ -142,6 +143,38 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
             };
            
+        }
+
+        public async Task<List<UserListResponseDto>> GetUsersAsync(string actorUserId)
+        {
+            _logger.LogInformation( "Fetching users. RequestedBy: {ActorUserId}",actorUserId);
+
+            var users = await _userManager.Users.ToListAsync();
+
+            var userList = new List<UserListResponseDto>();
+
+            foreach (var user in users)
+            {
+                var Role = await _userManager.GetRolesAsync(user);
+
+                if (Role.Contains("Admin"))
+                {
+                    continue;
+                }
+
+                userList.Add(new UserListResponseDto
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email!,
+                    Role = Role.FirstOrDefault()
+
+                });
+              
+            }
+            _logger.LogInformation("Users retrieved successfully. Count: {Count}", userList.Count);
+
+            return userList;
         }
     }
 }
