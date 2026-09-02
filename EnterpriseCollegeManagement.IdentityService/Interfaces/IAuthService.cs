@@ -8,7 +8,8 @@ namespace EnterpriseCollegeManagement.IdentityService.Interfaces
         Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request);
 
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+        Task ChangePasswordAsync(string userId, ChangePasswordRequestDto request);
 
-        Task LogoutAsync();
+        
     }
 }

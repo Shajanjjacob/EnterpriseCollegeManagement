@@ -4,6 +4,7 @@ using EnterpriseCollegeManagement.IdentityService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EnterpriseCollegeManagement.IdentityService.Controllers
 {
@@ -61,6 +62,29 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
             {
                 Success = true,
                 Message = "Logged out successfully."
+            });
+        }
+
+        [HttpPut("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword( [FromBody] ChangePasswordRequestDto request)
+        {
+            var userId =  User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning(
+                    "Unable to identify authenticated user for password change.");
+
+                return Unauthorized();
+            }
+            await _authService.ChangePasswordAsync( userId,request);
+
+            
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Password changed successfully."
             });
         }
     }

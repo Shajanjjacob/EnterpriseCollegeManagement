@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+using EnterpriseCollegeManagement.IdentityService.Data;
 using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Requests;
 using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Responses;
 using EnterpriseCollegeManagement.IdentityService.Entities;
 using EnterpriseCollegeManagement.IdentityService.Exceptions;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog.Core;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnterpriseCollegeManagement.IdentityService.Services
@@ -21,10 +24,10 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
         private readonly ITokenService _tokenService;
 
         private readonly IAuditService _auditService;
-
+        private readonly ApplicationDbContext _context;
 
         public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-            IMapper mapper , ILogger<AuthService> logger , ITokenService tokenService ,IAuditService auditService)
+            IMapper mapper , ILogger<AuthService> logger , ITokenService tokenService ,IAuditService auditService, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -32,7 +35,58 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             _logger = logger;
             _tokenService = tokenService;
             _auditService = auditService;
+            _context = context;
         }
+
+        public async Task ChangePasswordAsync(string userId, ChangePasswordRequestDto request)
+        {
+            _logger.LogInformation( "Password change requested. UserId: {UserId}", userId);
+
+            if(request.NewPassword != request.ConfirmNewPassword)
+            {
+                _logger.LogWarning("Password change failed due to password confirmation mismatch. UserId: {UserId}", userId);
+
+                throw new BadRequestException(
+                    "New password and confirm password do not match.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if(user == null)
+            {
+                _logger.LogWarning("Password change failed. User not found. UserId: {UserId}",userId);
+
+                throw new NotFoundException("User not found.");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
+            var refreshTokens = await _context.RefreshTokens
+                .Where(x => x.UserId == userId && !x.IsRevoked).ToListAsync();
+
+            foreach(var refreshToken in refreshTokens)
+            {
+                refreshToken.IsRevoked = true;
+                refreshToken.RevokedDate = DateTime.UtcNow;
+            }
+            await _context.SaveChangesAsync();
+
+
+            if (!result.Succeeded)
+            {
+                var error = string.Join(" ", result.Errors.Select(x => x.Description));
+
+                _logger.LogWarning("Password change failed. UserId: {UserId}. Errors: {Errors}", userId,error);
+
+                throw new BadRequestException(error);
+            }
+
+
+            _logger.LogInformation("Password changed successfully and active refresh tokens revoked. UserId: {UserId}, RevokedTokenCount: {Count}",
+                userId,
+                refreshTokens.Count);
+        }
+
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
             _logger.LogInformation("Login attempt started for email: {Email}", request.Email);
@@ -93,10 +147,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
         }
 
-        public Task LogoutAsync()
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public async Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request)
         {
