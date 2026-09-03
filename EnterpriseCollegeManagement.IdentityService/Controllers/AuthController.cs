@@ -87,5 +87,34 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
                 Message = "Password changed successfully."
             });
         }
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+        {
+            _logger.LogInformation( "Forgot password request received for {Email}",request.Email);
+
+            await _authService.ForgotPasswordAsync(request);
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "If an account exists for this email, a password reset link has been generated."
+            });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+        {
+            _logger.LogInformation("Password reset request received.");
+
+            await _authService.ResetPasswordAsync(request);
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Password has been reset successfully."
+            });
+        }
     }
 }

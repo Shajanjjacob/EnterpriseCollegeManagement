@@ -10,6 +10,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Interfaces
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
         Task ChangePasswordAsync(string userId, ChangePasswordRequestDto request);
 
-        
+        Task ForgotPasswordAsync(ForgotPasswordRequestDto request);
+        Task ResetPasswordAsync(ResetPasswordRequestDto request);
     }
 }

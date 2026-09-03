@@ -61,6 +61,15 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
             var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
 
+            await _auditService.LogAsync(
+                            user.Id,
+                            "PasswordChanged",
+                            "ApplicationUser",
+                            user.Id,
+                            "User password was changed successfully.",
+                            null,
+                            null);
+
             var refreshTokens = await _context.RefreshTokens
                 .Where(x => x.UserId == userId && !x.IsRevoked).ToListAsync();
 
@@ -85,6 +94,34 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             _logger.LogInformation("Password changed successfully and active refresh tokens revoked. UserId: {UserId}, RevokedTokenCount: {Count}",
                 userId,
                 refreshTokens.Count);
+        }
+
+        public async Task ForgotPasswordAsync(ForgotPasswordRequestDto request)
+        {
+            _logger.LogInformation("Forgot password request received for {Email}",request.Email);
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if(user == null)
+            {
+                _logger.LogWarning("Forgot password requested for a non-existing account.");
+
+                
+                return;
+            }
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink =
+                       $"https://localhost:7219/api/Auth/reset-password" +
+                       $"?email={Uri.EscapeDataString(user.Email!)}" +
+                       $"&token={Uri.EscapeDataString(token)}";
+
+            _logger.LogInformation(
+                "Password reset link generated successfully. UserId: {UserId}",
+                user.Id);
+            //for Development
+            Console.WriteLine("======================================");
+            Console.WriteLine("PASSWORD RESET LINK");
+            Console.WriteLine(resetLink);
+            Console.WriteLine("======================================");
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -214,9 +251,68 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             };
         }
 
+        public async Task ResetPasswordAsync(ResetPasswordRequestDto request)
+        {
+            _logger.LogInformation("Password reset request received.");
+
+            if(request.NewPassword !=  request.ConfirmPassword)
+            {
+                _logger.LogWarning("Password reset failed due to password confirmation mismatch.");
+
+                throw new BadRequestException(
+                    "New password and confirm password do not match.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if(user == null)
+            {
+                _logger.LogWarning( "Password reset failed. User not found.");
+
+                throw new BadRequestException("Invalid password reset request.");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+
+            if(!result.Succeeded)
+            {
+                var errors = string.Join(" ", result.Errors.Select(x => x.Description));
+
+                _logger.LogWarning("Password reset failed. UserId: {UserId}. Errors: {Errors}", user.Id, errors);
+
+                throw new BadRequestException(errors);
+            }
+
+          await _auditService.LogAsync(
+            user.Id,
+            "PasswordReset",
+            "ApplicationUser",
+            user.Id,
+            "User password was reset successfully.",
+            null,
+            null);
+
+            //revoke refresh Token
+
+            var refreshTokens = await _context.RefreshTokens.Where(x => x.UserId == user.Id && !x.IsRevoked).ToListAsync();
+
+            foreach(var refreshToken in refreshTokens)
+            {
+                refreshToken.IsRevoked= true;
+                refreshToken.RevokedDate= DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Password reset successfully. Active refresh tokens revoked. UserId: {UserId}, RevokedTokenCount: {Count}",
+                user.Id,
+                refreshTokens.Count);
+        }
+
         #region
 
-      
+
+
 
 
         #endregion
