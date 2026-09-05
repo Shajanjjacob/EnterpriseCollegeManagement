@@ -1,10 +1,14 @@
 ﻿using EnterpriseCollegeManagement.IdentityService.DTOs.Auth.Requests;
 using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using EnterpriseCollegeManagement.IdentityService.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+
 
 namespace EnterpriseCollegeManagement.IdentityService.Controllers
 {
@@ -114,6 +118,70 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
             {
                 Success = true,
                 Message = "Password has been reset successfully."
+            });
+        }
+
+
+        [HttpGet("google-login")]
+        public IActionResult GoogleLogin()
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = "/api/Auth/google-callback"
+            };
+
+            return Challenge(
+                properties,
+                GoogleDefaults.AuthenticationScheme);
+        }
+
+
+        [HttpGet("google-callback")]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Google authentication failed.");
+
+                return Unauthorized(new
+                {
+                    Success = false,
+                    Message = "Google authentication failed."
+                });
+            }
+
+            var email = result.Principal?.FindFirstValue(ClaimTypes.Email);
+
+            var name = result.Principal?.FindFirstValue(ClaimTypes.Name);
+
+            var googleUserId = result.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(googleUserId))
+            {
+                _logger.LogWarning("Required Google user information was not found.");
+
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Unable to retrieve Google account information."
+                });
+            }
+
+            var tokenResult = await _authService.GoogleLoginAsync( email,googleUserId,name);
+
+            await HttpContext.SignOutAsync(
+                IdentityConstants.ExternalScheme);
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Google login successful.",
+                Token = tokenResult.Token,
+                Expiration = tokenResult.Expiration,
+                RefreshToken = tokenResult.RefreshToken,
+                RefreshTokenExpiration = tokenResult.RefreshTokenExpiration
             });
         }
     }

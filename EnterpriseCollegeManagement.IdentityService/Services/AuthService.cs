@@ -124,6 +124,56 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             Console.WriteLine("======================================");
         }
 
+        public async Task<TokenResultDto> GoogleLoginAsync(string email, string googleUserId, string? name)
+        {
+            _logger.LogInformation( "Google login started for {Email}", email);
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                _logger.LogInformation("Google user not found. Creating new user for {Email}", email);
+
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+
+                    _logger.LogError("Failed to create Google user {Email}. Errors: {Errors}", email, errors);
+
+                    throw new BadRequestException(errors);
+                }
+
+                var roleResult = await _userManager.AddToRoleAsync(user, "Student");
+
+                if (!roleResult.Succeeded)
+                {
+                    var errors = string.Join(" ", roleResult.Errors.Select(x => x.Description));
+
+                    _logger.LogError("Failed to assign Student role to Google user {Email}. Errors: {Errors}",email,errors);
+
+                    throw new BadRequestException("User created but failed to assign Student role.");
+                }
+                _logger.LogInformation( "New Google user created successfully. UserId: {UserId}", user.Id);
+            }
+            else
+            {
+                _logger.LogInformation("Existing user found for Google login. UserId: {UserId}", user.Id);
+
+            }
+            var tokenResult = await _tokenService.GenerateTokenAsync(user);
+
+            return tokenResult;
+
+        }
+
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
             _logger.LogInformation("Login attempt started for email: {Email}", request.Email);

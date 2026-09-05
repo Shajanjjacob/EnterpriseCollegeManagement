@@ -87,7 +87,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 IsRevoked = false
 
             };
-            _context.RefreshTokens.AddAsync(refreshToken);
+           await _context.RefreshTokens.AddAsync(refreshToken);
             await _context.SaveChangesAsync();
 
 

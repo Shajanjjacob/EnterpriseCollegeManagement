@@ -79,6 +79,17 @@ builder.Services.AddAuthentication(option =>
                 Encoding.UTF8.GetBytes(jwt["Key"]!))
         };
 
+    })
+    .AddGoogle(options =>
+    {
+        options.ClientId =
+            builder.Configuration["Authentication:Google:ClientId"]!;
+
+        options.ClientSecret =
+            builder.Configuration["Authentication:Google:ClientSecret"]!;
+
+        options.SignInScheme =
+            IdentityConstants.ExternalScheme;
     });
 
 builder.Services.AddControllers();
