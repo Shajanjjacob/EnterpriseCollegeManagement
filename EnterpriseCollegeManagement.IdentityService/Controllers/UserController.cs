@@ -21,7 +21,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         }
 
         [HttpPut("assign-role")]
-
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RoleASsign( [FromBody] AssignRoleRequestDto request)
         {
             var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -65,6 +65,25 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
             return Ok(result);
         }
 
+        [AllowAnonymous]
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserById(string userId)
+        {
+            _logger.LogInformation("Get user by ID request started. UserId: {UserId}",userId);
+
+            var result = await _userService.GetUserByIdAsync(userId);
+
+            if (result == null)
+            {
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "User not found."
+                });
+            }
+
+            return Ok(result);
+        }
 
 
 

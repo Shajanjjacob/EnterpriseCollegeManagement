@@ -7,5 +7,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Interfaces
     {
         Task<UserResponseDto> AssignRoleAsync(string actorUserId, AssignRoleRequestDto request);
         Task<List<UserListResponseDto>> GetUsersAsync(string actorUserId);
+
+        Task<GetUserResponseDto?> GetUserByIdAsync(string userId);
     }
 }

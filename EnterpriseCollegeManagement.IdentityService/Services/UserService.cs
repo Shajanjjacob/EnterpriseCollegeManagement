@@ -145,6 +145,29 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
            
         }
 
+        public async Task<GetUserResponseDto?> GetUserByIdAsync(string userId)
+        {
+            _logger.LogInformation( "Fetching user by UserId: {UserId}", userId);
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning( "User not found. UserId: {UserId}",userId);
+
+                return null;
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new GetUserResponseDto
+            {
+                UserId = user.Id,
+                Email = user.Email ?? string.Empty,
+                Role = roles.FirstOrDefault() ?? string.Empty
+            };
+        }
+
         public async Task<List<UserListResponseDto>> GetUsersAsync(string actorUserId)
         {
             _logger.LogInformation( "Fetching users. RequestedBy: {ActorUserId}",actorUserId);
