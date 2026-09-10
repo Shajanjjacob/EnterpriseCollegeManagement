@@ -93,5 +93,27 @@ namespace EnterpriseCollegeManagement.StudentService.Services
 
             return response;
         }
+
+        public async Task<StudentResponseDto?> GetStudentByIdAsync(int id)
+        {
+            _logger.LogInformation("Fetching student profile. StudentId: {StudentId}",id);
+
+            var student = await _context.Students
+                .Include(d => d.Department)
+                .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+
+            if(student == null)
+            {
+                _logger.LogWarning("Student profile not found. StudentId: {StudentId}",id);
+
+                return null;
+            }
+
+            var response = _mapper.Map<StudentResponseDto>(student);
+
+            _logger.LogInformation("Student profile retrieved successfully. StudentId: {StudentId}",id);
+
+            return response;
+        }
     }
 }

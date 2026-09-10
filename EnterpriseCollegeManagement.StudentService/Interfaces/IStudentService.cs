@@ -6,5 +6,7 @@ namespace EnterpriseCollegeManagement.StudentService.Interfaces
     public interface IStudentService
     {
         Task<StudentResponseDto> CreateStudentAsync(CreateStudentProfileRequestDto request, string actorUserId);
+
+        Task<StudentResponseDto?> GetStudentByIdAsync(int id);
     }
 }

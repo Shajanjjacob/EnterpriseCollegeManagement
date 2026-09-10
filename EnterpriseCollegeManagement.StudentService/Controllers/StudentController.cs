@@ -51,12 +51,28 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
                 result);
 
         }
-
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetStudentById(int id)
+       public  async Task<IActionResult> GetStudentById(int id)
         {
-           
-            return Ok();
+            _logger.LogInformation("Get student request started. StudentId: {StudentId}",id);
+
+            var result = await _studentService.GetStudentByIdAsync(id);
+            if (result == null)
+            {
+                _logger.LogWarning(
+                    "Student profile not found. StudentId: {StudentId}",
+                    id);
+
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+            }
+
+            _logger.LogInformation("Get student request completed. StudentId: {StudentId}", id);
+
+            return Ok(result);
         }
 
     }
