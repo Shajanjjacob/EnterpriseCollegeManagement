@@ -19,6 +19,8 @@
 
         public string Address { get; set; } = string.Empty;
 
+        public string? ProfilePhotoUrl { get; set; }
+
         public int DepartmentId { get; set; }
 
         public Department Department { get; set; } = null!;
