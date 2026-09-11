@@ -94,6 +94,8 @@ namespace EnterpriseCollegeManagement.StudentService.Services
             return response;
         }
 
+       
+
         public async Task<StudentResponseDto?> GetStudentByIdAsync(int id)
         {
             _logger.LogInformation("Fetching student profile. StudentId: {StudentId}",id);
@@ -134,6 +136,25 @@ namespace EnterpriseCollegeManagement.StudentService.Services
             student.UpdatedDate = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            return _mapper.Map<StudentResponseDto>(student);
+        }
+
+
+        public async Task<StudentResponseDto?> GetMyProfileAsync(string userId)
+        {
+            _logger.LogInformation( "Fetching current student profile. UserId: {UserId}", userId);
+
+            var student =  await _context.Students.
+                Include(d => d.Department)
+                .FirstOrDefaultAsync(x => x.UserId == userId && !x.IsDeleted);
+
+            if( student == null)
+            {
+                _logger.LogWarning( "Student profile not found. UserId: {UserId}", userId);
+
+                return null;
+            }
 
             return _mapper.Map<StudentResponseDto>(student);
         }

@@ -154,12 +154,39 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             _logger.LogInformation( "Profile photo saved successfully. UserId: {UserId}", userId);
 
-            var result =
-                await _studentService.UploadProfilePhotoAsync(
-                    userId,
-                    profilePhotoUrl);
+            var result = await _studentService.UploadProfilePhotoAsync( userId,profilePhotoUrl);
 
             return Ok(result);
         }
+
+        [HttpGet("me")]
+        [Authorize(Roles = "Student")]
+
+        public async Task<IActionResult> GetMyProfileAsync(string userId)
+        {
+            var user = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning( "Unable to identify authenticated Student user.");
+
+                return Unauthorized();
+            }
+
+            var result = await _studentService.GetMyProfileAsync(userId);
+
+            if (result == null)
+            {
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+            }
+
+            return Ok(result);
+        }
+
+
     }
 }
