@@ -115,5 +115,27 @@ namespace EnterpriseCollegeManagement.StudentService.Services
 
             return response;
         }
+
+        public async Task<StudentResponseDto> UploadProfilePhotoAsync( string userId, string profilePhotoUrl)
+        {
+            var student = await _context.Students
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == userId &&
+                    !x.IsDeleted);
+
+            if (student == null)
+            {
+                throw new NotFoundException( "Student profile not found.");
+            }
+
+            student.ProfilePhotoUrl = profilePhotoUrl;
+            student.UpdatedBy = userId;
+            student.UpdatedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<StudentResponseDto>(student);
+        }
     }
 }

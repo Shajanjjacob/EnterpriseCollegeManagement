@@ -8,5 +8,7 @@ namespace EnterpriseCollegeManagement.StudentService.Interfaces
         Task<StudentResponseDto> CreateStudentAsync(CreateStudentProfileRequestDto request, string actorUserId);
 
         Task<StudentResponseDto?> GetStudentByIdAsync(int id);
+
+        Task<StudentResponseDto> UploadProfilePhotoAsync(string userId, string profilePhotoUrl);
     }
 }
