@@ -12,5 +12,7 @@ namespace EnterpriseCollegeManagement.StudentService.Interfaces
         Task<StudentResponseDto> UploadProfilePhotoAsync(string userId, string profilePhotoUrl);
 
         Task<StudentResponseDto?> GetMyProfileAsync(string userId);
+
+        Task<StudentResponseDto?> UpdateMyProfileAsync(string userId, UpdateStudentProfileRequestDto request);
     }
 }

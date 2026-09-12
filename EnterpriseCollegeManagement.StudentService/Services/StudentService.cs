@@ -158,5 +158,38 @@ namespace EnterpriseCollegeManagement.StudentService.Services
 
             return _mapper.Map<StudentResponseDto>(student);
         }
+
+        public async Task<StudentResponseDto?> UpdateMyProfileAsync(string userId, UpdateStudentProfileRequestDto request)
+        {
+            _logger.LogInformation("Student profile update started. UserId: {UserId}", userId);
+
+
+            var student = await _context.Students
+                .Include(d => d.Department)
+                .FirstOrDefaultAsync(x => x.UserId == userId && !x.IsDeleted);
+
+            if(student == null)
+            {
+
+                _logger.LogWarning("Student profile not found for update. UserId: {UserId}",userId);
+
+                return null;
+            }
+
+            student.FirstName = request.FirstName;
+            student.LastName = request.LastName;
+            student.DateOfBirth = request.DateOfBirth;
+            student.Phone = request.Phone;
+            student.Address = request.Address;
+
+            student.UpdatedBy = userId;
+            student.UpdatedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Student profile updated successfully. StudentId: {StudentId}, UserId: {UserId}",student.Id,userId);
+
+            return _mapper.Map<StudentResponseDto>(student);
+        }
     }
 }

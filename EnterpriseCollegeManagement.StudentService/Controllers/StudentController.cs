@@ -232,5 +232,39 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
         }
 
 
+        [HttpPut("me")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateStudentProfileRequestDto request)
+        {
+            _logger.LogInformation("Update my profile request started.");
+
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if(string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("Unable to identify authenticated Student user.");
+
+                return Unauthorized();
+            }
+
+            var result  = await _studentService.UpdateMyProfileAsync(userId, request);
+            
+           if(result == null)
+           {
+                _logger.LogWarning("Student profile not found. UserId: {UserId}",userId);
+
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+           }
+
+            _logger.LogInformation( "Update my profile request completed. UserId: {UserId}",userId);
+
+            return Ok(result);
+        }
+
     }
 }
