@@ -133,6 +133,23 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
                 });
             }
 
+
+            //USER PROFILE BASED 
+            var existingStudent = await _studentService.GetMyProfileAsync(userId);
+
+            if(existingStudent == null)
+            {
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+            }
+
+
+            var oldPhotoUrl = existingStudent.ProfilePhotoUrl;
+
+
             var fileName = $"{Guid.NewGuid()}{extension}";
 
             var folder = Path.Combine( _environment.WebRootPath, "uploads", "students");
@@ -144,19 +161,46 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             var filePath = Path.Combine(folder, fileName);
 
-            await using (var stream =
-                new FileStream(filePath, FileMode.Create))
+            await using (var stream =new FileStream(filePath, FileMode.Create))
             {
                 await request.Photo.CopyToAsync(stream);
             }
 
             var profilePhotoUrl = $"/uploads/students/{fileName}";
 
-            _logger.LogInformation( "Profile photo saved successfully. UserId: {UserId}", userId);
+            try
+            {
+                // Update database
+                var result = await _studentService.UploadProfilePhotoAsync( userId,profilePhotoUrl);
 
-            var result = await _studentService.UploadProfilePhotoAsync( userId,profilePhotoUrl);
+                //delete old phote after change done only 
+                if (!string.IsNullOrEmpty(oldPhotoUrl))
+                {
+                    var oldFileName =Path.GetFileName(oldPhotoUrl);
 
-            return Ok(result);
+                    var oldFilePath = Path.Combine( folder,oldFileName);
+
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+
+                        _logger.LogInformation( "Old profile photo deleted. UserId: {UserId}", userId);
+                    }
+                }
+
+                return Ok(result);
+            }
+            catch
+            {
+              //update fails remove new phote
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                throw;
+            }
+            
         }
 
         [HttpGet("me")]
