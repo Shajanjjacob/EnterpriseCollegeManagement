@@ -14,5 +14,7 @@ namespace EnterpriseCollegeManagement.StudentService.Interfaces
         Task<StudentResponseDto?> GetMyProfileAsync(string userId);
 
         Task<StudentResponseDto?> UpdateMyProfileAsync(string userId, UpdateStudentProfileRequestDto request);
+
+        Task<StudentResponseDto?> UpdateStudentAsync(int studentId, AdminUpdateStudentRequestDto request , string actorUserId);
     }
 }

@@ -266,5 +266,39 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
             return Ok(result);
         }
 
+
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStudent(int id,[FromBody] AdminUpdateStudentRequestDto request)
+        {
+             _logger.LogInformation( "Admin student update request started. StudentId: {StudentId}",id);
+
+            var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(actorUserId))
+            {
+                _logger.LogWarning("Unable to identify authenticated Admin user.");
+
+                return Unauthorized();
+            }
+
+            var result = await _studentService.UpdateStudentAsync(id, request, actorUserId);
+
+            if (result == null)
+            {
+                _logger.LogWarning("Student profile not found. StudentId: {StudentId}",id);
+
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+            }
+
+            _logger.LogInformation("Admin student update request completed. StudentId: {StudentId}, AdminUserId: {AdminUserId}", id,actorUserId);
+
+            return Ok(result);
+        }
+
     }
 }

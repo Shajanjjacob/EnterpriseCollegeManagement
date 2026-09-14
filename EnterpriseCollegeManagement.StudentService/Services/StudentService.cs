@@ -191,5 +191,80 @@ namespace EnterpriseCollegeManagement.StudentService.Services
 
             return _mapper.Map<StudentResponseDto>(student);
         }
+
+        public async Task<StudentResponseDto?> UpdateStudentAsync(int studentId, AdminUpdateStudentRequestDto request, string actorUserId)
+        {
+            _logger.LogInformation( "Admin student update started. StudentId: {StudentId}, AdminUserId: {AdminUserId}",studentId, actorUserId);
+
+
+            var student = await _context.Students
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == studentId && !x.IsDeleted);
+
+            if( student == null )
+            {
+                _logger.LogWarning( "Student profile not found. StudentId: {StudentId}", studentId);
+
+                return null;
+            }
+
+
+            var departmentExists = await _context.Departments
+                .AnyAsync(x => x.Id == request.DepartmentId);
+
+            if(!departmentExists)
+            {
+                _logger.LogWarning( "Department not found. DepartmentId: {DepartmentId}",request.DepartmentId);
+
+                throw new NotFoundException("Department not found.");
+            }
+
+            var admissionNumberExists = await _context.Students
+                .AnyAsync(x => x.AdmissionNumber == request.AdmissionNumber && x.Id != studentId && !x.IsDeleted);
+
+            if (admissionNumberExists)
+            {
+                _logger.LogWarning("Admission number already exists. AdmissionNumber: {AdmissionNumber}",request.AdmissionNumber);
+
+                throw new ConflictException("Admission number already exists.");
+            }
+
+            if(request.DateOfBirth.Date >  DateTime.UtcNow.Date)
+            {
+                _logger.LogWarning( "Invalid date of birth. StudentId: {StudentId}", studentId);
+
+                throw new BadRequestException("Date of birth cannot be in the future.");
+            }
+
+            if (request.EnrollmentDate.Date <request.DateOfBirth.Date)
+            {
+                _logger.LogWarning(  "Invalid enrollment date. StudentId: {StudentId}",studentId);
+
+                throw new BadRequestException("Enrollment date cannot be before date of birth.");
+            }
+
+            student.AdmissionNumber = request.AdmissionNumber;
+            student.FirstName = request.FirstName;
+            student.LastName = request.LastName;
+            student.DateOfBirth = request.DateOfBirth;
+            student.Phone = request.Phone;
+            student.Address = request.Address;
+            student.DepartmentId = request.DepartmentId;
+            student.EnrollmentDate = request.EnrollmentDate;
+
+            student.UpdatedBy = actorUserId;
+            student.UpdatedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            //load new dpt
+
+            await _context.Entry(student).Reference(x => x.Department).LoadAsync();
+
+            _logger.LogInformation( "Student updated successfully. StudentId: {StudentId}, AdminUserId: {AdminUserId}",studentId,actorUserId);
+
+       
+            return _mapper.Map<StudentResponseDto>(student);
+        }
     }
 }
