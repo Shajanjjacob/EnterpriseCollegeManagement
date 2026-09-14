@@ -266,5 +266,34 @@ namespace EnterpriseCollegeManagement.StudentService.Services
        
             return _mapper.Map<StudentResponseDto>(student);
         }
+
+        public async Task<PagedResponseDto<StudentResponseDto>> GetAllStudentsAsync(int pageNumber, int pageSize)
+        {
+            _logger.LogInformation("Fetching students. PageNumber: {PageNumber}, PageSize: {PageSize}",pageNumber, pageSize);
+
+            var query =  _context.Students.
+                Include(X => X.Department)
+                .Where(X => !X.IsDeleted);
+
+            var totalCount = await query.CountAsync();
+
+            var student = await query.OrderBy(x => x.Id).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            var studentresponse = _mapper.Map<List<StudentResponseDto>>(student);
+
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            _logger.LogInformation( "Students retrieved successfully. Count: {Count}, TotalCount: {TotalCount}", studentresponse.Count,totalCount);
+
+            return new PagedResponseDto<StudentResponseDto>
+            {
+                Items = studentresponse,
+                pageNumber = pageNumber,
+                pageSize = pageSize,
+                TotalPage = totalPages,
+                TotalCount = totalCount
+
+            };
+        }
     }
 }

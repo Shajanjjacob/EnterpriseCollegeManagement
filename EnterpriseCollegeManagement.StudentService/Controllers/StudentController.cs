@@ -63,7 +63,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
             var result = await _studentService.GetStudentByIdAsync(id);
             if (result == null)
             {
-                _logger.LogWarning( "Student profile not found. StudentId: {StudentId}", id);
+                _logger.LogWarning("Student profile not found. StudentId: {StudentId}", id);
 
                 return NotFound(new
                 {
@@ -80,7 +80,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
         [HttpPost("me/profile-photo")]
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> UploadProfilePhoto( [FromForm] UploadProfilePhotoRequestDto request)
+        public async Task<IActionResult> UploadProfilePhoto([FromForm] UploadProfilePhotoRequestDto request)
         {
             _logger.LogInformation("UploadProfilePhoto endpoint reached.");
 
@@ -90,7 +90,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogWarning( "Unable to identify authenticated Student user.");
+                _logger.LogWarning("Unable to identify authenticated Student user.");
 
                 return Unauthorized();
             }
@@ -111,7 +111,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
                 ".png"
             };
 
-            var extension = Path.GetExtension(request.Photo.FileName) .ToLowerInvariant();
+            var extension = Path.GetExtension(request.Photo.FileName).ToLowerInvariant();
 
             if (!allowedExtensions.Contains(extension))
             {
@@ -137,7 +137,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
             //USER PROFILE BASED 
             var existingStudent = await _studentService.GetMyProfileAsync(userId);
 
-            if(existingStudent == null)
+            if (existingStudent == null)
             {
                 return NotFound(new
                 {
@@ -152,7 +152,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             var fileName = $"{Guid.NewGuid()}{extension}";
 
-            var folder = Path.Combine( _environment.WebRootPath, "uploads", "students");
+            var folder = Path.Combine(_environment.WebRootPath, "uploads", "students");
 
             if (!Directory.Exists(folder))
             {
@@ -161,7 +161,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             var filePath = Path.Combine(folder, fileName);
 
-            await using (var stream =new FileStream(filePath, FileMode.Create))
+            await using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await request.Photo.CopyToAsync(stream);
             }
@@ -171,20 +171,20 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
             try
             {
                 // Update database
-                var result = await _studentService.UploadProfilePhotoAsync( userId,profilePhotoUrl);
+                var result = await _studentService.UploadProfilePhotoAsync(userId, profilePhotoUrl);
 
                 //delete old phote after change done only 
                 if (!string.IsNullOrEmpty(oldPhotoUrl))
                 {
-                    var oldFileName =Path.GetFileName(oldPhotoUrl);
+                    var oldFileName = Path.GetFileName(oldPhotoUrl);
 
-                    var oldFilePath = Path.Combine( folder,oldFileName);
+                    var oldFilePath = Path.Combine(folder, oldFileName);
 
                     if (System.IO.File.Exists(oldFilePath))
                     {
                         System.IO.File.Delete(oldFilePath);
 
-                        _logger.LogInformation( "Old profile photo deleted. UserId: {UserId}", userId);
+                        _logger.LogInformation("Old profile photo deleted. UserId: {UserId}", userId);
                     }
                 }
 
@@ -192,7 +192,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
             }
             catch
             {
-              //update fails remove new phote
+                //update fails remove new phote
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
@@ -200,7 +200,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
                 throw;
             }
-            
+
         }
 
         [HttpGet("me")]
@@ -212,7 +212,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogWarning( "Unable to identify authenticated Student user.");
+                _logger.LogWarning("Unable to identify authenticated Student user.");
 
                 return Unauthorized();
             }
@@ -241,27 +241,27 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if(string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning("Unable to identify authenticated Student user.");
 
                 return Unauthorized();
             }
 
-            var result  = await _studentService.UpdateMyProfileAsync(userId, request);
-            
-           if(result == null)
-           {
-                _logger.LogWarning("Student profile not found. UserId: {UserId}",userId);
+            var result = await _studentService.UpdateMyProfileAsync(userId, request);
+
+            if (result == null)
+            {
+                _logger.LogWarning("Student profile not found. UserId: {UserId}", userId);
 
                 return NotFound(new
                 {
                     Success = false,
                     Message = "Student profile not found."
                 });
-           }
+            }
 
-            _logger.LogInformation( "Update my profile request completed. UserId: {UserId}",userId);
+            _logger.LogInformation("Update my profile request completed. UserId: {UserId}", userId);
 
             return Ok(result);
         }
@@ -269,9 +269,9 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateStudent(int id,[FromBody] AdminUpdateStudentRequestDto request)
+        public async Task<IActionResult> UpdateStudent(int id, [FromBody] AdminUpdateStudentRequestDto request)
         {
-             _logger.LogInformation( "Admin student update request started. StudentId: {StudentId}",id);
+            _logger.LogInformation("Admin student update request started. StudentId: {StudentId}", id);
 
             var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -286,7 +286,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             if (result == null)
             {
-                _logger.LogWarning("Student profile not found. StudentId: {StudentId}",id);
+                _logger.LogWarning("Student profile not found. StudentId: {StudentId}", id);
 
                 return NotFound(new
                 {
@@ -295,10 +295,42 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
                 });
             }
 
-            _logger.LogInformation("Admin student update request completed. StudentId: {StudentId}, AdminUserId: {AdminUserId}", id,actorUserId);
+            _logger.LogInformation("Admin student update request completed. StudentId: {StudentId}, AdminUserId: {AdminUserId}", id, actorUserId);
 
             return Ok(result);
         }
 
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllStudents([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            _logger.LogInformation("Get all students request started. PageNumber: {PageNumber}, PageSize: {PageSize}", pageNumber, pageSize);
+
+            if (pageNumber <= 0)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Page number must be greater than 0."
+                });
+            }
+
+            if (pageSize <= 0)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Page size must be greater than 0."
+                });
+            }
+            var result = await _studentService.GetAllStudentsAsync(pageNumber, pageSize);
+
+            _logger.LogInformation("Get all students request completed. PageNumber: {PageNumber}, PageSize: {PageSize}, TotalCount: {TotalCount}", pageNumber,
+                pageSize,
+                result.TotalCount);
+
+            return Ok(result);
+        }
     }
 }
