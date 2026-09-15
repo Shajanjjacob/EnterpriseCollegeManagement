@@ -54,7 +54,7 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Teacher")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetStudentById(int id)
         {
@@ -329,6 +329,47 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
             _logger.LogInformation("Get all students request completed. PageNumber: {PageNumber}, PageSize: {PageSize}, TotalCount: {TotalCount}", pageNumber,
                 pageSize,
                 result.TotalCount);
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> SearchStudents([FromQuery] StudentSearchRequestDto request)
+        {
+            _logger.LogInformation("Get all students request started.");
+
+            if (request.PageNumber <= 0)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Page number must be greater than 0."
+                });
+            }
+
+            if (request.PageSize <= 0)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Page size must be greater than 0."
+                });
+            }
+
+            if (request.PageSize > 100)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Page size cannot exceed 100."
+                });
+            }
+
+            var result = await _studentService.SearchStudentsAsync(request);
+
+            _logger.LogInformation("Get all students request completed. TotalCount: {TotalCount}",result.TotalCount);
 
             return Ok(result);
         }

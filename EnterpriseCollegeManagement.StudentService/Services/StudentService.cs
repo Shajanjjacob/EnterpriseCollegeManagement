@@ -7,6 +7,7 @@ using EnterpriseCollegeManagement.StudentService.Exceptions;
 using EnterpriseCollegeManagement.StudentService.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
+using System.Drawing.Printing;
 
 namespace EnterpriseCollegeManagement.StudentService.Services
 {
@@ -293,6 +294,76 @@ namespace EnterpriseCollegeManagement.StudentService.Services
                 TotalPage = totalPages,
                 TotalCount = totalCount
 
+            };
+        }
+
+        public async Task<PagedResponseDto<StudentResponseDto>> SearchStudentsAsync(StudentSearchRequestDto request)
+        {
+            _logger.LogInformation(
+        "Fetching students. PageNumber: {PageNumber}, PageSize: {PageSize}, Search: {Search}, StudentId: {StudentId}, DepartmentId: {DepartmentId}",
+        request.PageNumber,
+        request.PageSize,
+        request.search,
+        request.StudentId,
+        request.DepartmentId);
+
+
+            var query =  _context.Students.AsNoTracking().Include(d => d.Department).Where(x => !x.IsDeleted);
+
+            //studentid
+
+            if (request.StudentId.HasValue)
+            {
+                query = query.Where(x => x.Id == request.StudentId.Value);
+            }
+
+            //addmissionno:
+
+            if (!string.IsNullOrWhiteSpace(request.AdmissionNumber))
+            {
+                var admissionNumber =  request.AdmissionNumber.Trim();
+
+                query = query.Where(x => x.AdmissionNumber.Contains(request.AdmissionNumber));
+            }
+
+            //dept
+
+            if(request.DepartmentId.HasValue)
+            {
+                query = query.Where(x => x.DepartmentId == request.DepartmentId.Value);
+            }
+
+            //general all 
+
+            if (!string.IsNullOrWhiteSpace(request.search))
+            {
+                var search =request.search.Trim();
+
+                query = query.Where(x => x.AdmissionNumber.Contains(search) ||
+
+                x.FirstName.Contains(search) || x.LastName.Contains(search));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var student = await query.OrderBy(x => x.Id).Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageNumber).ToListAsync();
+
+            var studentResponses = _mapper.Map<List<StudentResponseDto>>(student);
+
+
+            var totalPages =  (int)Math.Ceiling(totalCount / (double)request.PageSize);
+
+            _logger.LogInformation("Students retrieved successfully. ReturnedCount: {ReturnedCount}, TotalCount: {TotalCount}",
+                studentResponses.Count,
+                totalCount);
+
+            return new PagedResponseDto<StudentResponseDto>
+            {
+                Items = studentResponses,
+                pageNumber = request.PageNumber,
+                pageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPage = totalPages
             };
         }
     }
