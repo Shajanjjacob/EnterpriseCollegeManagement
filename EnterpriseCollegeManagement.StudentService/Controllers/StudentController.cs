@@ -373,5 +373,41 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+            _logger.LogInformation( "Delete student request started. StudentId: {StudentId}", id);
+
+            var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(actorUserId))
+            {
+                _logger.LogWarning( "Unable to identify authenticated Admin user.");
+
+                return Unauthorized();
+            }
+
+            var result = await _studentService.DeleteStudentAsync(id,actorUserId);
+
+            if (!result)
+            {
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+            }
+
+            _logger.LogInformation("Delete student request completed. StudentId: {StudentId}",id);
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Student profile deleted successfully."
+            });
+        }
     }
 }

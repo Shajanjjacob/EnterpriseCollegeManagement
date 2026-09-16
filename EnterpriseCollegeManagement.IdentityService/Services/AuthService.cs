@@ -110,7 +110,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             }
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink =
-                       $"https://localhost:7219/api/Auth/reset-password" +
+                       $"https://localhost:7319/api/Auth/reset-password" +
                        $"?email={Uri.EscapeDataString(user.Email!)}" +
                        $"&token={Uri.EscapeDataString(token)}";
 

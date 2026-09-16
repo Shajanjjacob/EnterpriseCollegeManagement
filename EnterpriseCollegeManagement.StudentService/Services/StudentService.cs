@@ -366,5 +366,30 @@ namespace EnterpriseCollegeManagement.StudentService.Services
                 TotalPage = totalPages
             };
         }
+
+        public async Task<bool> DeleteStudentAsync(int studentId, string actorUserId)
+        {
+            _logger.LogInformation("Student soft delete started. StudentId: {StudentId}, AdminUserId: {AdminUserId}",  studentId,actorUserId);
+
+            var student = await _context.Students.FirstOrDefaultAsync(x => x.Id == studentId  && !x.IsDeleted);
+
+            if(student == null)
+            {
+                _logger.LogWarning( "Student not found or already deleted. StudentId: {StudentId}",studentId);
+
+                return false;
+            }
+
+            student.IsDeleted = true;
+            student.DeletedDate = DateTime.UtcNow;
+            student.DeletedBy = actorUserId;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation( "Student soft deleted successfully. StudentId: {StudentId}, AdminUserId: {AdminUserId}",studentId,actorUserId);
+
+            return true;
+
+        }
     }
 }

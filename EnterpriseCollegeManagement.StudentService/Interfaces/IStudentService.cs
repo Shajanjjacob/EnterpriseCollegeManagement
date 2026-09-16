@@ -20,5 +20,7 @@ namespace EnterpriseCollegeManagement.StudentService.Interfaces
         Task<PagedResponseDto<StudentResponseDto>> GetAllStudentsAsync(int pageNumber ,int pageSize);
 
         Task<PagedResponseDto<StudentResponseDto>> SearchStudentsAsync(StudentSearchRequestDto request);
+
+        Task<bool> DeleteStudentAsync(int studentId, string actorUserId);
     }
 }
