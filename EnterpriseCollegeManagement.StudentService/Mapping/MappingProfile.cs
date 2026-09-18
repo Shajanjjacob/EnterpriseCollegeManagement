@@ -18,7 +18,7 @@ namespace EnterpriseCollegeManagement.StudentService.Mapping
 
 
 
-                
+            CreateMap<Department, DepartmentResponseDto>();
 
 
 

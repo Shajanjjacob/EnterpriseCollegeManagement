@@ -30,6 +30,7 @@ builder.Host.UseSerilog();
 //DI
 
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
 builder.Services.AddDbContext<StudentDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DbContext")));
 
