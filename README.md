@@ -50,7 +50,7 @@ The project is being developed with a focus on:
 - 🌐 Google authentication
 - 🛡️ Role-based authorization
 - 🚀 Docker-based deployment readiness
-- 🧪 Automated testing
+- 🧪 Automated unit testing
 - 📦 Clean and maintainable architecture
 - 🌍 Production deployment readiness
 
@@ -59,87 +59,92 @@ The project is being developed with a focus on:
 # 🏗️ System Architecture
 
 ```text
-                              ┌──────────────────────┐
-                              │       Browser        │
-                              └──────────┬───────────┘
-                                         │
-                                         ▼
-                              ┌──────────────────────┐
-                              │        Portal        │
-                              │    ASP.NET Core MVC  │
-                              └──────────┬───────────┘
-                                         │
-                                         ▼
-                              ┌──────────────────────┐
-                              │     API Gateway      │
-                              │        YARP          │
-                              └──────────┬───────────┘
-                                         │
-                 ┌───────────────────────┼───────────────────────┐
-                 │                       │                       │
-                 ▼                       ▼                       ▼
-        ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-        │ IdentityService  │   │ StudentService   │   │ AcademicService  │
-        │                  │   │                  │   │                  │
-        │ Authentication   │   │ Student Domain   │   │ Academic Domain  │
-        │ Authorization    │   │ Student Data     │   │ Academic Data    │
-        │ JWT              │   │                  │   │                  │
-        │ Google Login     │   │                  │   │                  │
-        └──────────────────┘   └──────────────────┘   └──────────────────┘
-                                         │
-                                         ▼
-                              ┌──────────────────────┐
-                              │  AssignmentService  │
-                              │                      │
-                              │  Assignment Domain   │
-                              └──────────────────────┘
-
+                               ┌──────────────────────┐
+                               │       Browser        │
+                               └──────────┬───────────┘
+                                          │
+                                          ▼
+                               ┌──────────────────────┐
+                               │        Portal        │
+                               │    ASP.NET Core MVC  │
+                               └──────────┬───────────┘
+                                          │
+                                          ▼
+                               ┌──────────────────────┐
+                               │     API Gateway      │
+                               │        YARP          │
+                               └──────────┬───────────┘
+                                          │
+                  ┌───────────────────────┼───────────────────────┐
+                  │                       │                       │
+                  ▼                       ▼                       ▼
+         ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+         │ IdentityService  │   │ StudentService   │   │ AcademicService  │
+         │                  │   │                  │   │                  │
+         │ Authentication   │   │ Student Domain   │   │ Academic Domain  │
+         │ Authorization    │   │ Student Data     │   │ Academic Data    │
+         │ JWT              │   │ Department Data  │   │                  │
+         │ Google Login     │   │                  │   │                  │
+         └──────────────────┘   └──────────────────┘   └──────────────────┘
+                                          │
+                                          ▼
+                               ┌──────────────────────┐
+                               │  AssignmentService  │
+                               │                      │
+                               │  Assignment Domain   │
+                               └──────────────────────┘
 ```
 
+---
+
 ## 📂 Solution Structure
+
+```text
 EnterpriseCollegeManagement
 │
 ├── src
-│   │
 │   ├── EnterpriseCollegeManagement.AcademicService
-│   │
 │   ├── EnterpriseCollegeManagement.ApiGateway
-│   │
 │   ├── EnterpriseCollegeManagement.AssignmentService
-│   │
 │   ├── EnterpriseCollegeManagement.IdentityService
-│   │
 │   ├── EnterpriseCollegeManagement.Portal
-│   │
 │   └── EnterpriseCollegeManagement.StudentService
 │
 ├── tests
+│   └── EnterpriseCollegeManagement.StudentService.Tests
 │
 ├── docs
-│
 ├── docker
-│
 └── README.md
+```
+
+---
+
 # 🧰 Technology Stack
-Category	Technology
-Language	C#
-Framework	ASP.NET Core
-Architecture	Microservices
-API	ASP.NET Core Web API
-Frontend	ASP.NET Core MVC
-ORM	Entity Framework Core
-Database	Microsoft SQL Server
-Identity	ASP.NET Core Identity
-Authentication	JWT
-External Authentication	Google
-Authorization	Role-Based Authorization
-API Gateway	YARP
-Logging	Serilog
-API Documentation	Swagger / OpenAPI
-Testing	xUnit
-Containerization	Docker
-Source Control	Git / GitHub
-Secret Management	User Secrets / Environment Variables
+
+| Category | Technology |
+|---|---|
+| Language | C# |
+| Framework | ASP.NET Core |
+| Architecture | Microservices |
+| API | ASP.NET Core Web API |
+| Frontend | ASP.NET Core MVC |
+| ORM | Entity Framework Core |
+| Database | Microsoft SQL Server |
+| Identity | ASP.NET Core Identity |
+| Authentication | JWT |
+| External Authentication | Google |
+| Authorization | Role-Based Authorization |
+| API Gateway | YARP |
+| Logging | Serilog |
+| API Documentation | Swagger / OpenAPI |
+| Testing | xUnit, Moq, EF Core InMemory |
+| Containerization | Docker |
+| Source Control | Git / GitHub |
+| Secret Management | User Secrets / Environment Variables |
+
+---
+
 # 🔐 IdentityService
 
 The IdentityService is responsible for authentication, authorization,
@@ -149,44 +154,52 @@ user management and security-related functionality.
 
 Implemented:
 
-✅ User Registration
-✅ User Login
-✅ JWT Authentication
-✅ Refresh Tokens
-✅ Refresh Token Rotation
-✅ Refresh Token Expiration
-✅ Refresh Token Revocation
-✅ Logout
-✅ Google Authentication
-✅ External Google Login
+- ✅ User Registration
+- ✅ User Login
+- ✅ JWT Authentication
+- ✅ Refresh Tokens
+- ✅ Refresh Token Rotation
+- ✅ Refresh Token Expiration
+- ✅ Refresh Token Revocation
+- ✅ Logout
+- ✅ Google Authentication
+- ✅ External Google Login
+
 ## 👥 Authorization & Roles
 
 The application currently supports three main roles:
 
-Role	Description
-👑 Admin	System administration and user management
-👨‍🏫 Teacher	Teaching and academic-related functionality
-🎓 Student	Student-related functionality
+| Role | Description |
+|---|---|
+| 👑 Admin | System administration and user management |
+| 👨‍🏫 Teacher | Teaching and academic-related functionality |
+| 🎓 Student | Student-related functionality |
+
 ### Role Rules
-New normal users are automatically assigned the Student role.
-New Google users are automatically assigned the Student role.
-Only Admin users can change Student/Teacher roles.
-Normal users cannot assign themselves the Admin role.
-Admin endpoints are protected using role-based authorization.
+
+- New normal users are automatically assigned the Student role.
+- New Google users are automatically assigned the Student role.
+- Only Admin users can change Student/Teacher roles.
+- Normal users cannot assign themselves the Admin role.
+- Admin endpoints are protected using role-based authorization.
 
 Example:
 
+```csharp
 [Authorize(Roles = "Admin")]
+```
+
 # 🔒 Password Management
 
 IdentityService provides:
 
-✅ Change Password
-✅ Forgot Password
-✅ Reset Password
-✅ Password Confirmation
-✅ Refresh Token Revocation after Password Change
-✅ Refresh Token Revocation after Password Reset
+- ✅ Change Password
+- ✅ Forgot Password
+- ✅ Reset Password
+- ✅ Password Confirmation
+- ✅ Refresh Token Revocation after Password Change
+- ✅ Refresh Token Revocation after Password Reset
+
 ## Development Password Reset
 
 During development, the password-reset token/link can be tested using the
@@ -196,6 +209,7 @@ development environment.
 
 The planned production flow is:
 
+```text
 User
   │
   ▼
@@ -221,48 +235,37 @@ IdentityService
   │
   ▼
 Password Updated
+```
+
 # 🔍 Audit Logging
 
 Important security-sensitive operations are recorded through the audit system.
 
 Audit information can include:
 
-Actor
-Action
-Entity
-Entity ID
-Previous value
-New value
-Timestamp
+- Actor
+- Action
+- Entity
+- Entity ID
+- Previous value
+- New value
+- Timestamp
 
 The audit system supports:
 
-📅 Date filtering
-📄 Pagination
-👑 Admin-only access
+- 📅 Date filtering
+- 📄 Pagination
+- 👑 Admin-only access
 
-Example:
-
-Admin
-  │
-  ▼
-Role Changed
-  │
-  ▼
-Target User
-  │
-  ├── Previous Role: Student
-  │
-  └── New Role: Teacher
 # 👤 User Management
 
 Administrators can:
 
-View application users
-View user roles
-Assign Student role
-Assign Teacher role
-Track role changes through audit logs
+- View application users
+- View user roles
+- Assign Student role
+- Assign Teacher role
+- Track role changes through audit logs
 
 The system prevents normal users from assigning the Admin role.
 
@@ -272,56 +275,50 @@ The application uses short-lived JWT access tokens.
 
 JWT tokens contain relevant identity information such as:
 
-User ID
-Username
-Email
-Role
-Token ID
+- User ID
+- Username
+- Email
+- Role
+- Token ID
 
-Authentication flow:
-
-Login
-  │
-  ▼
-IdentityService
-  │
-  ├──────────────► JWT Access Token
-  │
-  └──────────────► Refresh Token
 # 🔄 Refresh Token Architecture
 
 Refresh tokens provide a mechanism for obtaining a new access token without
 requiring the user to log in again.
 
+```text
                     Login
                       │
-          ┌───────────┴───────────┐
-          ▼                       ▼
-    Access Token            Refresh Token
-          │                       │
-          │                       ▼
-          │                 Token Refresh
-          │                       │
-          │                       ▼
-          │                Old Token Revoked
-          │                       │
-          │                       ▼
-          │                New Refresh Token
-          │                       │
-          └───────────────────────┘
+           ┌──────────┴──────────┐
+           ▼                     ▼
+     Access Token          Refresh Token
+           │                     │
+           │                     ▼
+           │               Token Refresh
+           │                     │
+           │                     ▼
+           │              Old Token Revoked
+           │                     │
+           │                     ▼
+           │              New Refresh Token
+           │                     │
+           └─────────────────────┘
+```
 
 Refresh-token security includes:
 
-🔄 Rotation
-⏳ Expiration
-🚫 Revocation
-🔓 Logout
-🔐 Revocation after password changes
-🔐 Revocation after password resets
+- 🔄 Rotation
+- ⏳ Expiration
+- 🚫 Revocation
+- 🔓 Logout
+- 🔐 Revocation after password changes
+- 🔐 Revocation after password resets
+
 # 🌐 Google Authentication
 
 Google authentication is integrated into the IdentityService.
 
+```text
 User
   │
   ▼
@@ -347,11 +344,127 @@ Generate Application JWT
   │
   ▼
 Generate Refresh Token
+```
 
 Google authenticates the external identity.
 
 The application's IdentityService remains responsible for application users,
 roles, JWT tokens and refresh tokens.
+
+---
+
+# 🎓 StudentService
+
+The StudentService manages student profiles and department data for the college
+management system.
+
+## 👨‍🎓 Student Management
+
+Implemented:
+
+- ✅ Student profile creation
+- ✅ Student profile retrieval
+- ✅ Student self-profile retrieval
+- ✅ Student self-profile update
+- ✅ Admin student update
+- ✅ Student search and filtering
+- ✅ Pagination
+- ✅ Profile photo upload/replacement
+- ✅ Soft delete
+- ✅ Audit fields
+- ✅ Department relationship management
+
+## 🏢 Department Management
+
+Implemented:
+
+- ✅ Department creation
+- ✅ Department retrieval
+- ✅ Department listing
+- ✅ Department update
+- ✅ Department soft delete
+- ✅ Prevention of department deletion when active students are assigned
+- ✅ Department-based student relationships
+- ✅ Department audit fields
+
+### Department Relationship
+
+```text
+Department
+   │
+   │ 1
+   │
+   ├───────────────< Student
+                    many
+```
+
+A student belongs to a department through `DepartmentId`, which references the
+department primary key.
+
+## 🗑️ Soft Delete
+
+Student and department records use soft deletion instead of physical deletion.
+
+```text
+IsDeleted = false  → Active record
+IsDeleted = true   → Soft-deleted record
+```
+
+Deletion metadata includes fields such as:
+
+- `DeletedBy`
+- `DeletedDate`
+
+## 📝 Audit Fields
+
+Entities support audit information such as:
+
+- `CreatedBy`
+- `CreatedDate`
+- `UpdatedBy`
+- `UpdatedDate`
+- `DeletedBy`
+- `DeletedDate`
+
+## 🔎 Student Search
+
+Student search supports filtering by:
+
+- Student ID
+- Admission Number
+- Department
+- Name/search text
+- Pagination
+
+## 🧪 StudentService Unit Testing
+
+The StudentService now has automated unit tests using:
+
+- xUnit
+- Moq
+- EF Core InMemory
+
+The test suite covers important business scenarios including:
+
+- ✅ Successful student creation
+- ✅ Duplicate admission number validation
+- ✅ Invalid department validation
+- ✅ Identity user not found
+- ✅ Invalid Identity role
+- ✅ Existing student profile validation
+- ✅ Successful student update
+- ✅ Student soft deletion
+
+## 🧪 DepartmentService Unit Testing
+
+DepartmentService also has automated tests covering the main business flows:
+
+- ✅ Successful department creation
+- ✅ Department retrieval by ID
+- ✅ Successful department update
+- ✅ Preventing deletion when active students are assigned
+
+---
 
 # 🛡️ Security
 
@@ -359,94 +472,103 @@ Security is a major focus of this project.
 
 Implemented security features include:
 
-🔐 JWT authentication
-👥 Role-based authorization
-🔄 Refresh-token rotation
-🚫 Refresh-token revocation
-🔑 Password hashing through ASP.NET Core Identity
-🌐 Google authentication
-📝 Audit logging
-🧱 Global exception handling
-📋 Secure configuration
-🔒 Production secrets kept outside source control
+- 🔐 JWT authentication
+- 👥 Role-based authorization
+- 🔄 Refresh-token rotation
+- 🚫 Refresh-token revocation
+- 🔑 Password hashing through ASP.NET Core Identity
+- 🌐 Google authentication
+- 📝 Audit logging
+- 🧱 Global exception handling
+- 📋 Secure configuration
+- 🔒 Production secrets kept outside source control
+
+---
+
 # 🔑 Secret Management
 
 The project separates source code from environment-specific secrets.
 
-Development
+## Development
 
 Development secrets are stored using:
 
-ASP.NET Core User Secrets
+**ASP.NET Core User Secrets**
 
 Examples include:
 
-Database Connection String
-JWT Signing Key
-Google Client ID
-Google Client Secret
-Admin Credentials
-Email Credentials
+- Database Connection String
+- JWT Signing Key
+- Google Client ID
+- Google Client Secret
+- Admin Credentials
+- Email Credentials
 
 These values should not be committed to Git.
 
-Production
+## Production
 
 Production secrets will be supplied separately through:
 
-Environment Variables
-
-or the hosting provider's secure secret-management system.
+- Environment Variables
+- Hosting-provider secret-management systems
 
 Production credentials will not be stored in the Git repository.
 
+---
+
 # 🧱 Microservice Responsibilities
-# 🔐 IdentityService
+
+## 🔐 IdentityService
 
 Responsible for:
 
-Authentication
-Authorization
-Users
-Roles
-JWT
-Refresh Tokens
-Google Authentication
-Password Management
-Audit Logging
+- Authentication
+- Authorization
+- Users
+- Roles
+- JWT
+- Refresh Tokens
+- Google Authentication
+- Password Management
+- Audit Logging
 
-Status: ✅ Completed
+**Status: ✅ Completed**
 
 ## 🎓 StudentService
 
 Responsible for:
 
-Student profiles
-Student information
-Student-related business operations
+- Student profiles
+- Student information
+- Department management
+- Student-related business operations
+- Department-related business operations
 
-Status: 🚧 In Development
+**Status: ✅ Completed**
 
 ## 📚 AcademicService
 
 Responsible for:
 
-Courses
-Subjects
-Academic information
-Academic-related business operations
+- Courses
+- Subjects
+- Academic information
+- Academic-related business operations
 
-Status: ⏳ Planned
+**Status: ⏳ Planned**
 
 ## 📝 AssignmentService
 
 Responsible for:
 
-Assignments
-Assignment management
-Assignment-related business operations
+- Assignments
+- Assignment management
+- Assignment-related business operations
 
-Status: ⏳ Planned
+**Status: ⏳ Planned**
+
+---
 
 # 🌐 API Gateway
 
@@ -455,72 +577,80 @@ to the appropriate microservice.
 
 Technology:
 
-YARP - Yet Another Reverse Proxy
+**YARP - Yet Another Reverse Proxy**
 
 Planned routing:
 
+```text
 /api/auth/*        → IdentityService
 /api/users/*       → IdentityService
 /api/students/*    → StudentService
 /api/academic/*    → AcademicService
 /api/assignments/* → AssignmentService
+```
 
-Status: ⏳ Planned
+**Status: ⏳ Planned**
+
+---
 
 # 🖥️ Portal
 
 The Portal is the user-facing web application built using:
 
-ASP.NET Core MVC
+**ASP.NET Core MVC**
 
 The Portal will communicate with backend services through the API Gateway.
 
 Planned functionality includes:
 
-User login
-Google login
-Registration
-Password management
-Student functionality
-Teacher functionality
-Admin functionality
-Assignment functionality
-Academic functionality
+- User login
+- Google login
+- Registration
+- Password management
+- Student functionality
+- Teacher functionality
+- Admin functionality
+- Assignment functionality
+- Academic functionality
 
-Status: ⏳ Planned
+**Status: ⏳ Planned**
+
+---
 
 # 📐 Architecture Principles
+
 ## Independent Service Ownership
 
 Each microservice owns its business domain and its data.
 
+```text
 IdentityService
       │
       ▼
 Identity Data
-
 
 StudentService
       │
       ▼
 Student Data
 
-
 AcademicService
       │
       ▼
 Academic Data
 
-
 AssignmentService
       │
       ▼
 Assignment Data
+```
 
 Services should communicate through APIs rather than directly accessing another
 microservice's database.
 
 ## Separation of Responsibilities
+
+```text
 Browser
    │
    ▼
@@ -534,25 +664,31 @@ Microservices
    │
    ▼
 Service-specific Data
+```
+
+---
+
 # 🧪 Testing
 
 The project uses:
 
-xUnit
+- **xUnit** for test execution and assertions
+- **Moq** for mocking dependencies
+- **EF Core InMemory** for isolated service-level database testing
 
-Testing focuses on important business and security scenarios including:
+Current automated test coverage focuses on important business rules in the
+completed Identity/Student work rather than attempting to test every line of
+code.
 
-Authentication
-Authorization
-Role management
-User management
-JWT functionality
-Refresh tokens
-Business rules
+The StudentService and DepartmentService test suite currently contains **12
+meaningful unit tests** covering create, validation, update and soft-delete
+scenarios.
 
-Testing coverage will continue to expand as additional services are completed.
+Testing will continue to expand as additional services are completed.
 
-Status: 🚧 In Progress
+**Status: ✅ StudentService and DepartmentService unit testing completed**
+
+---
 
 # 🐳 Docker
 
@@ -560,6 +696,7 @@ The project is being prepared for containerized deployment using Docker.
 
 Planned container structure:
 
+```text
 ┌──────────────────────┐
 │        Portal        │
 └──────────────────────┘
@@ -583,31 +720,43 @@ Planned container structure:
 ┌──────────────────────┐
 │  AssignmentService   │
 └──────────────────────┘
+```
 
-Status: ⏳ Planned
+**Status: ⏳ Planned**
+
+---
 
 # 🚀 Deployment Strategy
 
 The application is designed to support environment-specific configuration.
 
 ## Development Environment
-Local Machine
+
+```text
+Local Development
      │
      ├── User Secrets
      ├── Development Database
      ├── Development Google OAuth
      └── Local Services
+```
+
 ## Production Environment
+
+```text
 Production Hosting
-       │
-       ├── Environment Variables
-       ├── Production Database
-       ├── Production Google OAuth
-       ├── Production Email Provider
-       └── HTTPS
+     │
+     ├── Environment Variables
+     ├── Production Database
+     ├── Production Google OAuth
+     ├── Production Email Provider
+     └── HTTPS
+```
 
 The application code remains the same while environment-specific values are
 provided through configuration.
+
+---
 
 # 🌍 Production Showcase
 
@@ -616,32 +765,39 @@ application.
 
 Expected production architecture:
 
-                         Internet
-                            │
-                            ▼
-                     ┌─────────────┐
-                     │   Portal    │
-                     └──────┬──────┘
-                            │
-                            ▼
-                     ┌─────────────┐
-                     │ API Gateway │
-                     └──────┬──────┘
-                            │
-             ┌──────────────┼──────────────┐
-             │              │              │
-             ▼              ▼              ▼
-        Identity        Student        Academic
-        Service         Service        Service
-                            │
-                            ▼
-                     Assignment
-                       Service
+```text
+                          Internet
+                             │
+                             ▼
+                        ┌─────────────┐
+                        │   Portal    │
+                        └──────┬──────┘
+                               │
+                               ▼
+                        ┌─────────────┐
+                        │ API Gateway │
+                        └──────┬──────┘
+                               │
+               ┌───────────────┼───────────────┐
+               │               │               │
+               ▼               ▼               ▼
+          Identity          Student        Academic
+          Service           Service        Service
+               │               │               │
+               └───────────────┼───────────────┘
+                               ▼
+                         Assignment
+                           Service
+```
+
+---
+
 # 📧 Production Email Flow
 
 The final production password-reset architecture will use a real email
 provider.
 
+```text
 User
  │
  ▼
@@ -667,27 +823,37 @@ IdentityService
  │
  ▼
 Password Reset
+```
 
 Sensitive information such as passwords and tokens will not be written to
 application logs.
 
+---
+
 # 📊 Project Status
-Component	Status
-🔐 IdentityService	✅ Completed
-🎓 StudentService	🚧 In Development
-📚 AcademicService	⏳ Planned
-📝 AssignmentService	⏳ Planned
-🌐 API Gateway	⏳ Planned
-🖥️ Portal	⏳ Planned
-🧪 Automated Testing	🚧 In Progress
-🐳 Docker	⏳ Planned
-🔄 CI/CD	⏳ Planned
-🌍 Production Deployment	⏳ Planned
+
+| Component | Status |
+|---|---|
+| 🔐 IdentityService | ✅ Completed |
+| 🎓 StudentService | ✅ Completed |
+| 📚 AcademicService | ⏳ Planned |
+| 📝 AssignmentService | ⏳ Planned |
+| 🌐 API Gateway | ⏳ Planned |
+| 🖥️ Portal | ⏳ Planned |
+| 🧪 Student/Department Unit Testing | ✅ Completed |
+| 🐳 Docker | ⏳ Planned |
+| 🔄 CI/CD | ⏳ Planned |
+| 🌍 Production Deployment | ⏳ Planned |
+
+---
+
 # 🗺️ Roadmap
+
+```text
 [x] IdentityService
         │
         ▼
-[ ] StudentService
+[x] StudentService + Department Management + Unit Tests
         │
         ▼
 [ ] AcademicService
@@ -709,24 +875,33 @@ Component	Status
         │
         ▼
 [ ] Production Deployment
+```
+
+---
+
 # 🔀 Git Workflow
 
 The project uses feature-based Git branches.
 
+```text
 main
  │
  ├── feature/identity-service      ✅ Merged
  │
- ├── feature/student-service       🚧 Current
+ ├── feature/student-service       ✅ Merged
  │
- ├── feature/academic-service
+ ├── feature/academic-service      ⏳ Next
  │
  ├── feature/assignment-service
  │
  ├── feature/api-gateway
  │
  └── feature/portal
+```
+
 ## Development Workflow
+
+```text
 Create Feature Branch
         │
         ▼
@@ -742,53 +917,62 @@ Create Feature Branch
        Push
         │
         ▼
- Merge into main
+   Merge into main
         │
         ▼
 Create Next Feature Branch
+```
+
+---
+
 # 💻 Local Development
+
 ## Prerequisites
 
 Install the following tools:
 
-.NET SDK
-Visual Studio
-SQL Server
-SQL Server Management Studio
-Git
-Docker Desktop
+- .NET SDK
+- Visual Studio
+- SQL Server
+- SQL Server Management Studio
+- Git
+- Docker Desktop
+
 ## Run the Services
 
 Each microservice is designed to be developed and tested independently.
 
-API documentation is available through Swagger for the Web API services.
+API documentation is available through Swagger/OpenAPI for the Web API services.
 
-Example IdentityService Swagger URL:
+The README intentionally does not store environment-specific localhost URLs;
+use the URL generated by the local development profile for each service.
 
-https://localhost:7319/swagger/index.html
+---
+
 # 🔐 Configuration
 
 The repository contains only safe configuration.
 
 The following information must never be committed:
 
-❌ Production database passwords
-❌ JWT signing keys
-❌ Google Client Secrets
-❌ Admin passwords
-❌ SMTP credentials
-❌ API keys
-❌ Other sensitive credentials
+- ❌ Production database passwords
+- ❌ JWT signing keys
+- ❌ Google Client Secrets
+- ❌ Admin passwords
+- ❌ SMTP credentials
+- ❌ API keys
+- ❌ Other sensitive credentials
 
 Development secrets should be stored using:
 
-ASP.NET Core User Secrets
+**ASP.NET Core User Secrets**
 
 Production secrets should be supplied through:
 
-Environment Variables
+- Environment Variables
+- Hosting-provider secure secret-management systems
 
-or the hosting provider's secure secret-management mechanism.
+---
 
 # 📝 Development Notes
 
@@ -799,47 +983,51 @@ authorization, API design, security practices, testing and deployment concepts.
 The project is intended as a technical portfolio project and does not
 represent professional production microservices experience at an organization.
 
+---
+
 # 🎯 Project Goals
 
 The primary goals of this project are to demonstrate practical experience with:
 
-Modern ASP.NET Core development
-C# backend development
-Microservices architecture
-RESTful Web APIs
-Entity Framework Core
-SQL Server
-ASP.NET Core Identity
-JWT authentication
-Refresh-token security
-Role-based authorization
-Google authentication
-Audit logging
-API Gateway architecture
-ASP.NET Core MVC
-Docker
-Automated testing
-CI/CD
-Production deployment
-Secure configuration and secret management
+- Modern ASP.NET Core development
+- C# backend development
+- Microservices architecture
+- RESTful Web APIs
+- Entity Framework Core
+- SQL Server
+- ASP.NET Core Identity
+- JWT authentication
+- Refresh-token security
+- Role-based authorization
+- Google authentication
+- Audit logging
+- API Gateway architecture
+- ASP.NET Core MVC
+- Docker
+- Automated testing
+- CI/CD
+- Production deployment concepts
+- Secure configuration and secret management
+
+---
+
 # 👨‍💻 Author
-Shajan J Jacob
+
+**Shajan J Jacob**
 
 EnterpriseCollegeManagement
 
-ASP.NET Core
-C#
-Microservices
-SQL Server
-JWT
-Google Authentication
-YARP
-Serilog
-Docker
-xUnit
+- ASP.NET Core
+- C#
+- Microservices
+- SQL Server
+- JWT
+- Google Authentication
+- YARP
+- Serilog
+- Docker
+- xUnit
+
 <p align="center">
-
-⭐ <strong>Built with ASP.NET Core and modern .NET architecture</strong>
-
-</p> ```
-```
+  ⭐ <strong>Built with ASP.NET Core and modern .NET architecture</strong>
+</p>
