@@ -1,5 +1,8 @@
 using EnterpriseCollegeManagement.AcademicService.Data;
+using EnterpriseCollegeManagement.AcademicService.Interfaces;
+
 using EnterpriseCollegeManagement.AcademicService.Middleware;
+using EnterpriseCollegeManagement.AcademicService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +26,20 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+
+//dbcontext
+builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));
+//httpclient(service to service communication)
+
+builder.Services.AddHttpClient<IStudentServiceClient, StudentServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["Services:StudentServiceUrl"]!);
+});
+
+//DI
+
+builder.Services.AddScoped<ICourseService, CourseService>();
 
 
 builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));

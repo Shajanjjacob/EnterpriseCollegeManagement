@@ -55,7 +55,8 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Teacher,Student")]
+        //[Authorize(Roles = "Admin,Teacher,Student")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetDepartmentById(int id)
         {
             _logger.LogInformation("Get department request received. DepartmentId: {DepartmentId}", id);
