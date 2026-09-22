@@ -40,6 +40,7 @@ builder.Services.AddHttpClient<IStudentServiceClient, StudentServiceClient>(clie
 //DI
 
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
 
 
 builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));
