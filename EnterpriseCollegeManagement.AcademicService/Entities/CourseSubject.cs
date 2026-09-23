@@ -16,5 +16,7 @@
 
         public Subject Subject { get; set; } = null!;
 
+        public ICollection<Exam> Exams { get; set; } = new List<Exam>(); //one coursesubject have mant xams 
+
     }
 }
