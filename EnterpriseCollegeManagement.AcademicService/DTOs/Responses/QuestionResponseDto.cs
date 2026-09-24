@@ -1,11 +1,13 @@
-﻿namespace EnterpriseCollegeManagement.AcademicService.Entities
+﻿namespace EnterpriseCollegeManagement.AcademicService.DTOs.Responses
 {
-    public class Question
+    public class QuestionResponseDto
     {
         public int Id { get; set; }
+
         public int ExamId { get; set; }
-        public Exam Exam { get; set; } = null!; //
+
         public string QuestionText { get; set; } = string.Empty;
+
         public string OptionA { get; set; } = string.Empty;
 
         public string OptionB { get; set; } = string.Empty;
@@ -18,24 +20,8 @@
 
         public int Marks { get; set; }
 
-        public string? CreatedBy { get; set; }
-
         public DateTime CreatedDate { get; set; }
 
-        public string? UpdatedBy { get; set; }
-
         public DateTime? UpdatedDate { get; set; }
-
-       
-        public bool IsDeleted { get; set; }
-
-        public string? DeletedBy { get; set; }
-
-        public DateTime? DeletedDate { get; set; }
-
-
-        public ICollection<StudentAnswer> StudentAnswers { get; set; } = new List<StudentAnswer>(); //one qustn can have many ans
-
-
     }
 }
