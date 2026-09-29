@@ -6,5 +6,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
     {
 
         Task<DepartmentResponse?> GetDepartmentByIdAsync(int departmentId);
+
+        Task<StudentResponseDto?> GetStudentByUserIdAsync(string userId);
     }
 }

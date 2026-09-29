@@ -1,4 +1,4 @@
-﻿namespace EnterpriseCollegeManagement.StudentService.DTOs.Responses
+﻿namespace EnterpriseCollegeManagement.AcademicService.DTOs.Responses
 {
     public class StudentResponseDto
     {
@@ -12,23 +12,16 @@
 
         public string LastName { get; set; } = string.Empty;
 
-        public DateTime DateOfBirth { get; set; }
-
-        public string Phone { get; set; } = string.Empty;
-
-        public string Address { get; set; } = string.Empty;
-        public string? ProfilePhotoUrl { get; set; }
-
-
         public int DepartmentId { get; set; }
 
         public string DepartmentName { get; set; } = string.Empty;
+
+        public DateTime EnrollmentDate { get; set; }
 
         public int CourseId { get; set; }
 
         public int Semester { get; set; }
 
         public string Batch { get; set; } = string.Empty;
-        public DateTime EnrollmentDate { get; set; }
     }
 }

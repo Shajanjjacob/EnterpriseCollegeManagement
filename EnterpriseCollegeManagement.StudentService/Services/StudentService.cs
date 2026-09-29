@@ -17,14 +17,16 @@ namespace EnterpriseCollegeManagement.StudentService.Services
         private readonly StudentDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<StudentService> _logger;
+        private readonly ICourseServiceClient _courseServiceClient;
 
         private readonly IIdentityServiceClient _identityServiceClient;
-        public StudentService(StudentDbContext context, IMapper mapper, ILogger<StudentService> logger, IIdentityServiceClient identityServiceClient)
+        public StudentService(StudentDbContext context, IMapper mapper, ILogger<StudentService> logger, IIdentityServiceClient identityServiceClient, ICourseServiceClient courseServiceClient)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
             _identityServiceClient = identityServiceClient;
+            _courseServiceClient = courseServiceClient;
         }
 
 
@@ -65,6 +67,27 @@ namespace EnterpriseCollegeManagement.StudentService.Services
 
                 throw new NotFoundException("Department not found.");
             }
+
+            //SERVICE TO SERVICE COMM
+
+            var course = await _courseServiceClient.GetCourseByIdAsync(request.CourseId);
+
+            if(course == null)
+            {
+                _logger.LogWarning("Student profile creation failed. Course not found. CourseId: {CourseId}",request.CourseId);
+
+                throw new NotFoundException("Course not found.");
+            }
+
+            if (course.DepartmentId != request.DepartmentId)
+            {
+                _logger.LogWarning("Student profile creation failed. Course does not belong to department. CourseId: {CourseId}, DepartmentId: {DepartmentId}",
+                    request.CourseId,
+                    request.DepartmentId);
+
+                throw new BadRequestException( "Selected course does not belong to the selected department.");
+            }
+
 
             var admissionNumberExists = await _context.Students.AnyAsync(x => x.AdmissionNumber == request.AdmissionNumber && !x.IsDeleted );
 
@@ -220,6 +243,26 @@ namespace EnterpriseCollegeManagement.StudentService.Services
                 throw new NotFoundException("Department not found.");
             }
 
+            //SERVICE TO SERVICE COMM
+
+            var course = await _courseServiceClient.GetCourseByIdAsync(request.CourseId);
+
+            if (course == null)
+            {
+                _logger.LogWarning("Student profile creation failed. Course not found. CourseId: {CourseId}", request.CourseId);
+
+                throw new NotFoundException("Course not found.");
+            }
+
+            if (course.DepartmentId != request.DepartmentId)
+            {
+                _logger.LogWarning("Student profile creation failed. Course does not belong to department. CourseId: {CourseId}, DepartmentId: {DepartmentId}",
+                    request.CourseId,
+                    request.DepartmentId);
+
+                throw new BadRequestException("Selected course does not belong to the selected department.");
+            }
+
             var admissionNumberExists = await _context.Students
                 .AnyAsync(x => x.AdmissionNumber == request.AdmissionNumber && x.Id != studentId && !x.IsDeleted);
 
@@ -252,6 +295,9 @@ namespace EnterpriseCollegeManagement.StudentService.Services
             student.Address = request.Address;
             student.DepartmentId = request.DepartmentId;
             student.EnrollmentDate = request.EnrollmentDate;
+            student.CourseId = request.CourseId;
+            student.Batch = request.Batch;
+            student.Semester = request.Semester;
 
             student.UpdatedBy = actorUserId;
             student.UpdatedDate = DateTime.UtcNow;

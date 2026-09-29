@@ -49,7 +49,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Teacher,Student")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> GetQuestionById(int id)
         {
             _logger.LogInformation("Get question by ID request received. QuestionId: {QuestionId}", id);
@@ -69,7 +69,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
         }
 
         [HttpGet("exam/{examId:int}")]
-        [Authorize(Roles = "Admin,Teacher,Student")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> GetQuestionsByExamId(int examId)
         {
             _logger.LogInformation("Get questions by exam request received. ExamId: {ExamId}",examId);

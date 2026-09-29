@@ -1,11 +1,13 @@
-﻿namespace EnterpriseCollegeManagement.AcademicService.Entities
+﻿namespace EnterpriseCollegeManagement.AcademicService.DTOs.Responses
 {
-    public class ExamAttendance
+    public class ExamAttendanceResponseDto
     {
         public int Id { get; set; }
+
         public int ExamId { get; set; }
-        public Exam Exam { get; set; } = null!;
-        public string StudentUserId { get; set; } //identity userid 
+
+        public string StudentUserId { get; set; } = string.Empty;
+
         public DateTime StartedAt { get; set; }
 
         public DateTime? SubmittedAt { get; set; }
@@ -15,16 +17,11 @@
         public int TotalMarks { get; set; }
 
         public bool IsSubmitted { get; set; }
-
-        //result based 
+        //result 
         public bool IsResultPublished { get; set; }
 
         public string? ResultPublishedBy { get; set; }
 
         public DateTime? ResultPublishedDate { get; set; }
-
-
-
-        public ICollection<StudentAnswer> StudentAnswers { get; set; } = new List<StudentAnswer>(); //list of student xam ans records 
     }
 }

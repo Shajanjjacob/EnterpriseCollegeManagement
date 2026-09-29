@@ -68,7 +68,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
 
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Teacher,Student")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCourseById(int id)
         {
             _logger.LogInformation( "Get course request received. CourseId: {CourseId}",id);

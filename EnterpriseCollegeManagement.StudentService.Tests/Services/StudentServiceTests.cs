@@ -25,6 +25,7 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<StudentServiceClass>> _loggerMock;
         private readonly Mock<IIdentityServiceClient> _identityClientMock;
+        private readonly Mock<ICourseServiceClient> _courseServiceMock;
 
 
         public StudentServiceTests()
@@ -32,6 +33,7 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
             _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILogger<StudentServiceClass>>();
             _identityClientMock = new Mock<IIdentityServiceClient>();
+            _courseServiceMock = new Mock<ICourseServiceClient>();
         }
 
         private StudentDbContext CreateDbContext()
@@ -113,7 +115,8 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
               context,
               _mapperMock.Object,
               _loggerMock.Object,
-              _identityClientMock.Object
+              _identityClientMock.Object,
+              _courseServiceMock.Object
              );
             var result = await service.CreateStudentAsync( request,"admin-001"); //object and actoruserid
 
@@ -183,7 +186,8 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                         context,
                         _mapperMock.Object,
                         _loggerMock.Object,
-                        _identityClientMock.Object
+                        _identityClientMock.Object,
+                         _courseServiceMock.Object
                     );
 
             await Assert.ThrowsAsync<ConflictException>(
@@ -224,7 +228,8 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                         context,
                         _mapperMock.Object,
                         _loggerMock.Object,
-                        _identityClientMock.Object
+                        _identityClientMock.Object,
+                        _courseServiceMock.Object
                     );
 
             await Assert.ThrowsAsync<NotFoundException>(
@@ -261,7 +266,8 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                        context,
                        _mapperMock.Object,
                        _loggerMock.Object,
-                       _identityClientMock.Object
+                       _identityClientMock.Object,
+                       _courseServiceMock.Object
                    );
 
             await Assert.ThrowsAsync<NotFoundException>(() => service.CreateStudentAsync(request, "admin-001"));
@@ -301,7 +307,7 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                         context,
                         _mapperMock.Object,
                         _loggerMock.Object,
-                        _identityClientMock.Object
+                        _identityClientMock.Object, _courseServiceMock.Object
                     );
 
             await Assert.ThrowsAsync<BadRequestException>(
@@ -358,7 +364,7 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                     context,
                     _mapperMock.Object,
                     _loggerMock.Object,
-                    _identityClientMock.Object
+                    _identityClientMock.Object, _courseServiceMock.Object
                 );
 
             await Assert.ThrowsAsync<ConflictException>(
@@ -431,7 +437,7 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                            context,
                            _mapperMock.Object,
                            _loggerMock.Object,
-                           _identityClientMock.Object
+                           _identityClientMock.Object, _courseServiceMock.Object
                        );
 
             var result = await service.UpdateStudentAsync(1, request, "admin-002");
@@ -483,7 +489,7 @@ namespace EnterpriseCollegeManagement.StudentService.Tests.Services
                            context,
                            _mapperMock.Object,
                            _loggerMock.Object,
-                           _identityClientMock.Object
+                           _identityClientMock.Object, _courseServiceMock.Object
                        );
 
            

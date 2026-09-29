@@ -409,5 +409,29 @@ namespace EnterpriseCollegeManagement.StudentService.Controllers
                 Message = "Student profile deleted successfully."
             });
         }
+
+        [AllowAnonymous]
+        [HttpGet("user/{userId}")] //academicservice call 
+        public async Task<IActionResult> GetStudentByUserId(string userId)
+        {
+            _logger.LogInformation( "Get student profile by UserId request received. UserId: {UserId}",userId);
+
+            var result = await _studentService.GetMyProfileAsync(userId);
+
+            if (result == null)
+            {
+                _logger.LogWarning( "Student profile not found. UserId: {UserId}",userId);
+
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Student profile not found."
+                });
+            }
+
+            return Ok(result);
+        }
+
+
     }
 }

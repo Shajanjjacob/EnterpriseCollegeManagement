@@ -44,7 +44,9 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ICourseSubjectService, CourseSubjectService>();
 builder.Services.AddScoped<IExamService, ExamService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
-
+builder.Services.AddScoped<IExamAttendanceService, ExamAttendanceService>();
+builder.Services.AddScoped<IStudentAnswerService, StudentAnswerService>();
+builder.Services.AddScoped<IStudentAnswerService, StudentAnswerService>();
 
 builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));
 

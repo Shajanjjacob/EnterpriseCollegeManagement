@@ -26,6 +26,13 @@
         public Department Department { get; set; } = null!;
         public DateTime EnrollmentDate { get; set; }
 
+        public int CourseId { get; set; } //frm academic service 
+
+        public int Semester { get; set; }
+
+        public string Batch { get; set; } = string.Empty;
+
+
         //audit field
         public string CreatedBy { get; set; } = string.Empty;
 

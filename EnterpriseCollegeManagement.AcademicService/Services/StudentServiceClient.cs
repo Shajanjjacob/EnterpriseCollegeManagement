@@ -34,5 +34,21 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             var departmentid =  await response.Content.ReadFromJsonAsync<DepartmentResponse>();  //json to object
             return departmentid;
         }
+
+        public async Task<StudentResponseDto?> GetStudentByUserIdAsync(string userId)
+        {
+            _logger.LogInformation("Requesting student information from StudentService. UserId: {UserId}",userId);
+
+            var response = await _httpClient.GetAsync($"api/Student/user/{userId}");
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning( "Student profile not found in StudentService. UserId: {UserId}", userId);
+                return null;
+            }
+            response.EnsureSuccessStatusCode();
+
+            var Student =await response.Content.ReadFromJsonAsync<StudentResponseDto>();
+            return Student;
+        }
     }
 }

@@ -19,5 +19,12 @@
         public int DepartmentId { get; set; }
 
         public DateTime EnrollmentDate { get; set; }
+
+        public int CourseId { get; set; }
+
+        public int Semester { get; set; }
+
+        public string Batch { get; set; } = string.Empty;
+
     }
 }

@@ -40,12 +40,23 @@ builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 //httpclient(data get b/w diff services (service-to-service communication))
 
-builder.Services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(
-    client =>
-    {
-        client.BaseAddress = new Uri("https://localhost:72/");
-    });
+//builder.Services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(
+//    client =>
+//    {
+//        client.BaseAddress = new Uri("https://localhost:72/");
+//    });
 
+builder.Services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["Services:IdentityServiceUrl"]!);
+});
+
+builder.Services.AddHttpClient<ICourseServiceClient, CourseServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["Services:AcademicServiceUrl"]!);
+});
 
 builder.Services.AddControllers();
 
