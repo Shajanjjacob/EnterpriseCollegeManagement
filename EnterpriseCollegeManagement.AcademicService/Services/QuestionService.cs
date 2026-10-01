@@ -36,6 +36,14 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
 
                 throw new NotFoundException( "Exam not found.");
             }
+            if(exam.IsPublished)
+            {
+                _logger.LogWarning("Question creation failed. Exam is already published. ExamId: {ExamId}", exam.Id);
+
+                throw new BadRequestException("Cannot create question because the exam is already published.");
+            }
+
+
 
             var question = new Question
             {
@@ -86,6 +94,21 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 throw new NotFoundException("Question not found.");
 
             }
+
+            var exam = await _context.Exams.AsNoTracking() .FirstOrDefaultAsync(x =>  x.Id == question.ExamId &&!x.IsDeleted);
+
+            if (exam == null)
+            {
+                throw new NotFoundException("Exam not found.");
+            }
+
+            if (exam.IsPublished)
+            {
+                _logger.LogWarning("Question deletion failed. Exam is already published. ExamId: {ExamId}, QuestionId: {QuestionId}", exam.Id, question.Id);
+
+                throw new BadRequestException("Cannot delete question because the exam is already published.");
+            }
+
 
             question.DeletedBy = actorUserId;
             question.DeletedDate = DateTime.UtcNow;
@@ -178,7 +201,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             var examExists = await _context.Exams.AsNoTracking().AnyAsync(x => x.Id == request.ExamId && !x.IsDeleted);
             if(!examExists)
             {
-                _logger.LogWarning( "Question update failed. Exam not found. ExamId: {ExamId}",request.ExamId);
+                _logger.LogWarning("Question update failed. Exam not found. ExamId: {ExamId}",request.ExamId);
 
                 throw new NotFoundException("Exam not found.");
             }
@@ -191,6 +214,20 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 throw new NotFoundException("Question not found.");
 
             }
+            var exam = await _context.Exams.AsNoTracking().FirstOrDefaultAsync(x =>  x.Id == question.ExamId && !x.IsDeleted);
+
+            if (exam == null)
+            {
+                throw new NotFoundException("Exam not found.");
+            }
+
+            if (exam.IsPublished)
+            {
+                _logger.LogWarning("Question update failed. Exam is already published. ExamId: {ExamId}, QuestionId: {QuestionId}", exam.Id, question.Id);
+
+                throw new BadRequestException("Cannot update question because the exam is already published.");
+            }
+
 
             question.ExamId = request.ExamId;
             question.QuestionText = request.QuestionText.Trim();

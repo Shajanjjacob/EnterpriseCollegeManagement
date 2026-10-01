@@ -47,6 +47,8 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IExamAttendanceService, ExamAttendanceService>();
 builder.Services.AddScoped<IStudentAnswerService, StudentAnswerService>();
 builder.Services.AddScoped<IStudentAnswerService, StudentAnswerService>();
+builder.Services.AddScoped<IQuizGenerationService, QuizGenerationService>();
+builder.Services.AddScoped<IAIQuizClient, GeminiQuizClient>(); //AI
 
 builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));
 
