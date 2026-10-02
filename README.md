@@ -25,6 +25,7 @@
 ![Microservices](https://img.shields.io/badge/Architecture-Microservices-blue?style=for-the-badge)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange?style=for-the-badge)
 ![Google](https://img.shields.io/badge/Google-Authentication-red?style=for-the-badge&logo=google)
+![Gemini AI](https://img.shields.io/badge/AI-Google%20Gemini-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge)
 
 </p>
@@ -49,6 +50,7 @@ The project is being developed with a focus on:
 - 🔄 JWT and refresh-token authentication
 - 🌐 Google authentication
 - 🛡️ Role-based authorization
+- 🧠 AI-powered exam question generation (Google Gemini)
 - 🚀 Docker-based deployment readiness
 - 🧪 Automated unit testing
 - 📦 Clean and maintainable architecture
@@ -135,6 +137,7 @@ EnterpriseCollegeManagement
 | Authentication | JWT |
 | External Authentication | Google |
 | Authorization | Role-Based Authorization |
+| Generative AI | Google Gemini API |
 | API Gateway | YARP |
 | Logging | Serilog |
 | API Documentation | Swagger / OpenAPI |
@@ -551,12 +554,55 @@ Responsible for:
 
 Responsible for:
 
-- Courses
-- Subjects
-- Academic information
-- Academic-related business operations
+- Course and subject management
+- Exam creation and lifecycle management
+- AI-powered exam question generation
+- Student exam attendance and answer submission
+- Automatic exam auto-submission on time expiry
+- Exam result publishing
 
-**Status: ⏳ Planned**
+### 🧠 AI-Powered Quiz Generation
+
+AcademicService integrates with a generative AI API to automatically draft
+multiple-choice exam questions from instructor-provided topic text,
+reducing manual question-authoring effort.
+
+Implemented:
+
+- ✅ AI quiz generation via the Google Gemini API
+- ✅ Provider-agnostic AI client abstraction (`IAIQuizClient`) — the
+  underlying AI provider can be swapped (Gemini, OpenAI, or a local model)
+  without changing business logic
+- ✅ Structured JSON question/answer generation, parsed and validated
+  before persistence
+- ✅ Generated questions stored in SQL Server for reuse and editing
+- ✅ Manual question creation also supported alongside AI generation
+
+```csharp
+public interface IAIQuizClient
+{
+    Task<List<GeneratedQuestionDto>> GenerateQuestionsAsync(
+        QuizGenerationContextDto context);
+}
+```
+
+### 📝 Exam Lifecycle
+
+- ✅ Exam creation and scheduling
+- ✅ Exam attendance tracking with expiry
+- ✅ Student answer submission
+- ✅ Automatic exam auto-submission via a background service once the
+  allotted time expires
+- ✅ Exam result publishing
+
+### ⏱️ Background Processing
+
+A hosted `BackgroundService` (`ExamAutoSubmitBackgroundService`) runs
+continuously to detect exams whose attendance window has expired and
+auto-submits them, ensuring students are graded on their in-progress
+answers instead of being left in an unsubmitted state.
+
+**Status: ✅ Completed**
 
 ## 📝 AssignmentService
 
@@ -836,7 +882,7 @@ application logs.
 |---|---|
 | 🔐 IdentityService | ✅ Completed |
 | 🎓 StudentService | ✅ Completed |
-| 📚 AcademicService | ⏳ Planned |
+| 📚 AcademicService (Exams + AI Quiz Generation) | ✅ Completed |
 | 📝 AssignmentService | ⏳ Planned |
 | 🌐 API Gateway | ⏳ Planned |
 | 🖥️ Portal | ⏳ Planned |
@@ -856,7 +902,7 @@ application logs.
 [x] StudentService + Department Management + Unit Tests
         │
         ▼
-[ ] AcademicService
+[x] AcademicService + Exam Module + AI Quiz Generation (Gemini)
         │
         ▼
 [ ] AssignmentService
@@ -890,9 +936,9 @@ main
  │
  ├── feature/student-service       ✅ Merged
  │
- ├── feature/academic-service      ⏳ Next
+ ├── feature/academic-service      ✅ Merged
  │
- ├── feature/assignment-service
+ ├── feature/assignment-service      ⏳ Next
  │
  ├── feature/api-gateway
  │
@@ -1000,6 +1046,7 @@ The primary goals of this project are to demonstrate practical experience with:
 - Refresh-token security
 - Role-based authorization
 - Google authentication
+- Generative AI integration for content generation (Google Gemini)
 - Audit logging
 - API Gateway architecture
 - ASP.NET Core MVC
@@ -1023,6 +1070,7 @@ EnterpriseCollegeManagement
 - SQL Server
 - JWT
 - Google Authentication
+- Google Gemini AI
 - YARP
 - Serilog
 - Docker
