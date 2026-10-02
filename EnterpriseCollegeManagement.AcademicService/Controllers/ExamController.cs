@@ -49,14 +49,14 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
                 new { id = result.Id },
                 result);
         }
-
         [HttpGet]
         [Authorize(Roles = "Admin,Teacher,Student")]
-        public async Task<IActionResult> GetAllExams()
+        public async Task<IActionResult> GetAllExams([FromQuery] string? search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            _logger.LogInformation("Get all exams request received.");
+            _logger.LogInformation("Get all exams request received. Search: {Search}, PageNumber: {PageNumber}, PageSize: {PageSize}",search, pageNumber,
+                pageSize);
 
-            var result = await _examService.GetAllExamsAsync();
+            var result = await _examService.GetAllExamsAsync( search,pageNumber,pageSize);
 
             return Ok(result);
         }

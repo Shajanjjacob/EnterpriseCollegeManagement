@@ -114,20 +114,36 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             return true;
         }
 
-        public async Task<List<ExamResponseDto>> GetAllExamsAsync()
+        //getall and search
+        public async Task<PagedResponseDto<ExamResponseDto>> GetAllExamsAsync(string? search, int pageNumber, int pageSize)
         {
             _logger.LogInformation("Getting all exams.");
 
-            var exam = await _context.Exams.Include(x => x.courseSubject)
+            var query = _context.Exams.Include(x => x.courseSubject)
                 .ThenInclude(x => x.Course)
                 .Include(x => x.courseSubject)
                 .ThenInclude(x => x.Subject)
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted)
-                .OrderBy(x=> x.Id)
-                .ToListAsync();
+                .Where(x => !x.IsDeleted && !x.courseSubject.Course.IsDeleted && !x.courseSubject.Subject.IsDeleted);
 
-            return exam.Select(x => new ExamResponseDto
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.Title.
+                Contains(search) || x.courseSubject.Course.Name.Contains(search) || x.courseSubject.Subject.Name.Contains(search));
+            }
+
+
+            var totalRecords = await query.CountAsync();
+
+            var exams = await query.OrderBy(x => x.Id)
+                .Skip((pageNumber - 1) * pageNumber)
+                .Take(pageSize).ToListAsync();
+
+            var totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+
+
+            var response =  exams.Select(x => new ExamResponseDto
             {
                 Id = x.Id,
                 CourseSubjectId = x.CourseSubjectId,
@@ -142,6 +158,17 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 CreatedDate = x.CreatedDate,
                 UpdatedDate = x.UpdatedDate
             }).ToList();
+
+            _logger.LogInformation("Retrieved {ExamCount} exams. TotalRecords: {TotalRecords}, TotalPages: {TotalPages}",response.Count, totalRecords, totalPages);
+
+
+            return new  PagedResponseDto<ExamResponseDto> {
+                Items = response,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                TotalPages = totalPages
+            };
         }
 
         public async Task<ExamResponseDto?> GetExamByIdAsync(int id)

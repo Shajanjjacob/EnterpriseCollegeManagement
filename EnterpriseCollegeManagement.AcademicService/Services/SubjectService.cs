@@ -99,9 +99,24 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             return true;
         }
 
-        public async Task<List<SubjectResponseDto>> GetAllSubjectsAsync()
+        //getall and search 
+        public async Task<PagedResponseDto<SubjectResponseDto>> GetAllSubjectsAsync(string? search, int pageNumber,int pageSize)
         {
-            var subjects = await _context.Subjects.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x=> x.Id).ToListAsync();
+            _logger.LogInformation("Get all subjects started. Search: {Search}, PageNumber: {PageNumber}, PageSize: {PageSize}", search, pageNumber, pageSize);
+
+            var query = _context.Subjects.AsNoTracking().Where(x => !x.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.Name.Contains(search) || x.Code.Contains(search));
+            }
+            var totalRecords = await query.CountAsync();
+
+            var subjects = await query.OrderBy(x => x.Id).Skip((pageNumber - 1) * pageSize)
+                .Take(pageNumber).ToListAsync();
+
+            var totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
 
             var response = new List<SubjectResponseDto>();
 
@@ -120,7 +135,17 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
 
                 });
             }
-            return response;
+            _logger.LogInformation("Retrieved {SubjectCount} subjects. TotalRecords: {TotalRecords}, TotalPages: {TotalPages}", response.Count, totalRecords,totalPages);
+
+
+            return new PagedResponseDto<SubjectResponseDto>
+            {
+                Items = response,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                TotalPages = totalPages
+            };
 
         }
 

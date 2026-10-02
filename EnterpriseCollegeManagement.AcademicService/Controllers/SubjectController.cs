@@ -125,12 +125,11 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Teacher")]
-        public async Task<IActionResult> GetAllSubjects()
+        public async Task<IActionResult> GetAllSubjects([FromQuery] string? search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            _logger.LogInformation("Get all subjects request received.");
+            _logger.LogInformation("Get all subjects request received. Search: {Search}, PageNumber: {PageNumber}, PageSize: {PageSize}",search, pageNumber,pageSize);
 
-            var result = await _subjectService
-                .GetAllSubjectsAsync();
+            var result = await _subjectService.GetAllSubjectsAsync(search, pageNumber,pageSize);
 
             return Ok(result);
         }

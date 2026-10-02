@@ -9,7 +9,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
 
         Task<ExamResponseDto?> GetExamByIdAsync(int id);
 
-        Task<List<ExamResponseDto>> GetAllExamsAsync();
+        Task<PagedResponseDto<ExamResponseDto>> GetAllExamsAsync(string? search,int pageNumber,int pageSize);
 
         Task<ExamResponseDto> UpdateExamAsync(int id, CreateExamRequestDto request, string actorUserId);
 

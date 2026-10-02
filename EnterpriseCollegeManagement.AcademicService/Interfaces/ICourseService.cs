@@ -12,5 +12,9 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
         Task<CourseResponse?> GetCourseByIdAsync(int id);
 
         Task<bool> DeleteCourseAsync(int id, string actorUserId);
+
+        //search
+
+        Task<PagedResponseDto<CourseResponse>> GetCoursesAsync(string? search, int pageNumber, int pageSize);
     }
 }

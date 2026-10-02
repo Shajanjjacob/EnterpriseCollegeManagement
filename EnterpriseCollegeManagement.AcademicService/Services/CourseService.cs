@@ -145,10 +145,68 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             return response;
         }
 
+        //search 
+        public async Task<PagedResponseDto<CourseResponse>> GetCoursesAsync(string? search, int pageNumber, int pageSize)
+        {
+            _logger.LogInformation("Get courses started. Search: {Search}, PageNumber: {PageNumber}, PageSize: {PageSize}", search, pageNumber, pageSize);
 
 
+            var query = _context.Courses.AsNoTracking().Where(x => !x.IsDeleted);
 
-        
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.Code.Contains(search) || x.Name.Contains(search));
+            }
+
+            var totalrecords = await query.CountAsync();
+
+            //pagination
+
+            var courses = await query.OrderBy(x => x.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var totalPages = (int)Math.Ceiling((double)totalrecords / pageSize);
+
+            var items = new List<CourseResponse>();
+
+            foreach (var course in courses)
+            {
+                var department = _studentServiceClient.GetDepartmentByIdAsync(course.DepartmentId);
+
+                if(department == null)
+                {
+                    _logger.LogWarning("Department not found while getting courses. CourseId: {CourseId}, DepartmentId: {DepartmentId}", course.Id,
+                        course.DepartmentId);
+
+                    continue;
+                }
+
+                var respone = new CourseResponse
+                {
+                    Id = course.Id,
+                    Code = course.Code,
+                    Name = course.Name,
+                    Description = course.Description,
+                    DurationYears = course.DurationYears,
+                    DepartmentId = course.DepartmentId,
+                    
+                };
+
+                items.Add(respone);
+            }
+
+            return new PagedResponseDto<CourseResponse>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalrecords,
+                TotalPages = totalPages
+            };
+
+        }
 
         public async Task<CourseResponse?> UpdateCourseAsync(UpdateCourseRequestDto request, string actorUserId, int id)
         {

@@ -13,6 +13,6 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
 
         Task<SubjectResponseDto?> GetSubjectByIdAsync(int id);
 
-        Task<List<SubjectResponseDto>> GetAllSubjectsAsync();
+        Task<PagedResponseDto<SubjectResponseDto>> GetAllSubjectsAsync(string? search, int pageNumber, int pageSize);
     }
 }

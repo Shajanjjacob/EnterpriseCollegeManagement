@@ -117,5 +117,18 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
                 Message = "Course deleted successfully."
             });
         }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetCourses([FromQuery] string? search, [FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 10)
+        {
+            _logger.LogInformation("Get courses request received. Search: {Search}, PageNumber: {PageNumber}, PageSize: {PageSize}", search,pageNumber,
+                pageSize);
+
+            var result = await _courseService.GetCoursesAsync(search,pageNumber,pageSize);
+
+            return Ok(result);
+        }
     }
 }
