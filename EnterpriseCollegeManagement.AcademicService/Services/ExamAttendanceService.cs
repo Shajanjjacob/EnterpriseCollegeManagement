@@ -482,9 +482,74 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
 
         }
 
+        public async Task<List<StudentExamResultResponseDto>> GetStudentResultsAsync(string studentUserId)
+        {
+            _logger.LogInformation("Getting student result history. StudentUserId: {StudentUserId}", studentUserId);
+
+            var attendanceslist = await _context.ExamAttendances
+                .Where(x => x.StudentUserId == studentUserId && x.IsSubmitted && x.IsResultPublished).ToListAsync();
+
+
+            var studentlist = new List<StudentExamResultResponseDto>();
+
+            foreach(var attendance in attendanceslist)
+            {
+                var exam = await _context.Exams.Include(x => x.courseSubject)
+                    .ThenInclude(x => x.Subject)
+                    .Include(x => x.courseSubject)
+                    .ThenInclude(x => x.Course)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == attendance.ExamId && !x.IsDeleted && x.IsPublished);
+
+                if (exam == null)
+                {
+                    _logger.LogWarning("Exam not found while getting student result history. ExamId: {ExamId}, AttendanceId: {AttendanceId}",
+                        attendance.ExamId,
+                        attendance.Id);
+
+                    continue;
+                }
+
+                var department = await _studentServiceClient.GetDepartmentByIdAsync(exam.courseSubject.Course.DepartmentId);
+
+                if(department == null)
+                {
+                    _logger.LogWarning("Department not found while getting student result history. DepartmentId: {DepartmentId}, ExamId: {ExamId}", exam.courseSubject.Course.DepartmentId,
+                    exam.Id);
+
+                    continue;
+                }
+
+
+                var response = new StudentExamResultResponseDto
+                {
+                    ExamId = exam.Id,
+                    ExamTitle = exam.Title,
+                    CourseName = exam.courseSubject.Course.Name,
+                    SubjectName = exam.courseSubject.Subject.Name,
+                    DepartmentName = department.Name,
+                    Semester = exam.courseSubject.Semester,
+                    Score = attendance.Score,
+                    TotalMarks = attendance.TotalMarks,
+                    SubmittedAt = attendance.SubmittedAt!.Value
+                };
+
+               studentlist.Add(response);
+                
+            }
+            _logger.LogInformation("Retrieved {ResultCount} published exam results for StudentUserId: {StudentUserId}", studentlist.Count,
+                studentUserId);
+            return studentlist;
+
+        }
+
+
+
+
+
         //auto-submit method for exams 
 
-       private async Task AutoSubmitExpiredExamAsync(ExamAttendance  attendance)
+        private async Task AutoSubmitExpiredExamAsync(ExamAttendance  attendance)
         {
             _logger.LogInformation("Auto-submitting expired exam. AttendanceId: {AttendanceId}, ExamId: {ExamId}",attendance.Id,attendance.ExamId);
 
@@ -537,5 +602,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 await AutoSubmitExpiredExamAsync(expiredAttendance);
             }
         }
+
+       
     }
 }

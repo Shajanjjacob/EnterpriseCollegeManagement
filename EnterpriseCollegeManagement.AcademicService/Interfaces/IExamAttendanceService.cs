@@ -18,5 +18,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
         Task<List<ExamSubmissionResponseDto>> GetExamSubmissionsAsync(int examId);
 
         Task ProcessExpiredExamsAsync();   //autosubmit answer 
+
+        Task<List<StudentExamResultResponseDto>> GetStudentResultsAsync(string studentUserId);
     }
 }

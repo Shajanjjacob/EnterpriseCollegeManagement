@@ -157,5 +157,33 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
             return Ok(result);
         }
 
+
+        [HttpGet("my-results")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetMyResults()
+        {
+            _logger.LogInformation("Get student result history request received.");
+
+            var studentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(studentUserId))
+            {
+                _logger.LogWarning(
+                    "Get student result history failed because user ID was not found in token.");
+
+                return Unauthorized(new
+                {
+                    Success = false,
+                    Message = "User identity not found."
+                });
+            }
+
+            var result = await _examAttendanceService
+                .GetStudentResultsAsync(studentUserId);
+
+            return Ok(result);
+        }
+
+
     }
 }
