@@ -14,5 +14,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
         Task<ExamResponseDto> UpdateExamAsync(int id, CreateExamRequestDto request, string actorUserId);
 
         Task<bool> DeleteExamAsync(int id, string actorUserId);
+
+        Task<ExamResponseDto> PublishExamAsync(int examId, string actorUserId);
     }
 }

@@ -9,6 +9,7 @@
         public string StudentUserId { get; set; } = string.Empty;
 
         public DateTime StartedAt { get; set; }
+        public DateTime ExpiresAt { get; set; }
 
         public DateTime? SubmittedAt { get; set; }
 

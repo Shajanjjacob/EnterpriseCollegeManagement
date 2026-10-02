@@ -87,12 +87,19 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 throw new ConflictException("Student has already started this exam.");
             }
 
+            //changes related to autosubmit answer 
+
+            var startedAt = DateTime.UtcNow;
+            var expiresAt = startedAt.AddMinutes(exams.DurationMinutes);
+
+
 
             var studentattendance = new ExamAttendance
             {
                 ExamId = exams.Id,
                 StudentUserId = studentUserId,
                 StartedAt = DateTime.UtcNow,
+                ExpiresAt = expiresAt,  // auto submit 
                 Score = 0,
                 TotalMarks = exams.TotalMarks,
                 IsSubmitted = false
@@ -108,6 +115,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 ExamId = studentattendance.ExamId,
                 StudentUserId = studentattendance.StudentUserId,
                 StartedAt = studentattendance.StartedAt,
+                ExpiresAt = studentattendance.ExpiresAt, /// auto submit 
                 SubmittedAt = studentattendance.SubmittedAt,
                 Score = studentattendance.Score,
                 TotalMarks = studentattendance.TotalMarks,
@@ -199,8 +207,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
         {
             _logger.LogInformation("Submit exam request received. AttendanceId: {AttendanceId}, StudentUserId: {StudentUserId}",attendanceId,studentUserId);
 
-            var attendance = await _context.ExamAttendances
-                .FirstOrDefaultAsync(x => x.Id == attendanceId);
+            var attendance = await _context.ExamAttendances.FirstOrDefaultAsync(x => x.Id == attendanceId);
             if(attendance == null)
             {
                 _logger.LogWarning("Exam attendance not found. AttendanceId: {AttendanceId}",attendanceId);
@@ -223,6 +230,20 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
 
                 throw new ConflictException("Exam has already been submitted.");
             }
+
+            //auto submit answer related 
+            //Manual submission is not allowed after expiry.
+
+            if (DateTime.UtcNow >= attendance.ExpiresAt)
+            {
+                await AutoSubmitExpiredExamAsync(attendance);
+
+                _logger.LogWarning("Manual submission attempted after exam expiry. AttendanceId: {AttendanceId}",attendanceId);
+
+                throw new BadRequestException("Exam time has expired.");
+            }
+
+
 
             var examExists = await _context.Exams.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == attendance.ExamId && !x.IsDeleted);
@@ -410,6 +431,111 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
 
             };
 
+        }
+
+        public async Task<List<ExamSubmissionResponseDto>> GetExamSubmissionsAsync(int examId)
+        {
+            _logger.LogInformation("Getting exam submissions. ExamId: {ExamId}",  examId);
+
+            var examExists = await _context.Exams.AsNoTracking().AnyAsync(x => x.Id == examId && !x.IsDeleted);
+            if(!examExists)
+            {
+                _logger.LogWarning("Exam submissions retrieval failed. Exam not found. ExamId: {ExamId}",examId);
+
+                throw new NotFoundException("Exam not found.");
+            }
+
+            var attendances = await _context.ExamAttendances.AsNoTracking()
+                .Where(x => x.ExamId == examId && x.IsSubmitted).ToListAsync();
+
+            var result = new List<ExamSubmissionResponseDto>();
+
+            foreach(var attendance in attendances)
+            {
+                var student = await _studentServiceClient.GetStudentByUserIdAsync(attendance.StudentUserId);
+
+                if(student == null)
+                {
+                    _logger.LogWarning("Student profile not found for exam attendance. " + "ExamId: {ExamId}, StudentUserId: {StudentUserId}", examId,
+                        attendance.StudentUserId);
+
+                    continue;
+                }
+
+                var submission = new ExamSubmissionResponseDto
+                {
+                    AdmissionNumber = student.AdmissionNumber,
+                    ExamSubmitted = attendance.IsSubmitted,
+                    Score = attendance.Score,
+                    TotalMarks = attendance.TotalMarks,
+                    SubmittedDate = attendance.SubmittedAt,
+                    ResultPublished = attendance.IsResultPublished,
+
+                };
+
+                result.Add(submission);
+
+            }
+
+            return result;
+
+
+        }
+
+        //auto-submit method for exams 
+
+       private async Task AutoSubmitExpiredExamAsync(ExamAttendance  attendance)
+        {
+            _logger.LogInformation("Auto-submitting expired exam. AttendanceId: {AttendanceId}, ExamId: {ExamId}",attendance.Id,attendance.ExamId);
+
+            var examexist = await _context.Exams.AsNoTracking().FirstOrDefaultAsync(x => x.Id == attendance.ExamId);
+
+            if(examexist == null)
+            {
+                _logger.LogWarning("Auto-submit failed. Exam not found. ExamId: {ExamId}",attendance.ExamId);
+
+                throw new NotFoundException("Exam not found.");
+            }
+
+            var totalscore = await _context.StudentAnswers.Where(x => x.ExamAttendanceId == attendance.Id).SumAsync(x => x.MarksAwarded);
+
+            attendance.Score = totalscore;
+            attendance.TotalMarks = examexist.TotalMarks;
+            attendance.IsSubmitted = true;
+            attendance.SubmittedAt = attendance.ExpiresAt;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Expired exam auto-submitted successfully. AttendanceId: {AttendanceId}, Score: {Score}, TotalMarks: {TotalMarks}",
+                  attendance.Id,
+                  attendance.Score,
+                  attendance.TotalMarks);
+
+        }
+
+        public async Task ProcessExpiredExamsAsync()
+        {
+            _logger.LogInformation("Checking for expired exam attendances.");
+
+            var expiredAttendances = await _context.ExamAttendances
+                .Where(x => !x.IsSubmitted && x.ExpiresAt <= DateTime.UtcNow).ToListAsync();
+
+            if(expiredAttendances.Count == 0)
+            {
+                return;
+            }
+
+            _logger.LogInformation("Found {Count} expired exam attendances.",expiredAttendances.Count);
+
+            foreach (var expiredAttendance in expiredAttendances)
+            {
+                if (expiredAttendance.IsSubmitted)
+                {
+                    continue;
+                }
+
+                await AutoSubmitExpiredExamAsync(expiredAttendance);
+            }
         }
     }
 }

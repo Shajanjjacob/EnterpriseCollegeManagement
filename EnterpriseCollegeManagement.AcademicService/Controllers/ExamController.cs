@@ -132,5 +132,27 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
                 Message = "Exam deleted successfully."
             });
         }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPost("{examId}/publish")]
+        public async Task<IActionResult> PublishExam(int examId)
+        {
+            var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if(string.IsNullOrWhiteSpace(actorUserId))
+            {
+                return Unauthorized(new
+                {
+                    succes = false,
+                    message = "User identity not found."
+                });
+            }
+
+            var result = await _examService.PublishExamAsync(examId,actorUserId);
+
+            _logger.LogInformation("Exam published successfully. ExamId: {ExamId}, UserId: {UserId}",examId,actorUserId);
+
+            return Ok(result);
+        }
     }
 }

@@ -50,6 +50,8 @@ builder.Services.AddScoped<IStudentAnswerService, StudentAnswerService>();
 builder.Services.AddScoped<IQuizGenerationService, QuizGenerationService>();
 builder.Services.AddScoped<IAIQuizClient, GeminiQuizClient>(); //AI
 
+builder.Services.AddHostedService<ExamAutoSubmitBackgroundService>();  //background service for autosubmit exams
+
 builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));
 
 builder.Services.AddControllers();

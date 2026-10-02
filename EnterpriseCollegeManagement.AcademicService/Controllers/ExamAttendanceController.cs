@@ -143,5 +143,19 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
 
             return Ok(result);
         }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("exam/{examId}/submissions")]
+        public async Task<IActionResult> GetExamSubmissions(int examId)
+        {
+            _logger.LogInformation(
+                "Exam submissions request received. ExamId: {ExamId}",
+                examId);
+
+            var result = await _examAttendanceService.GetExamSubmissionsAsync(examId);
+
+            return Ok(result);
+        }
+
     }
 }

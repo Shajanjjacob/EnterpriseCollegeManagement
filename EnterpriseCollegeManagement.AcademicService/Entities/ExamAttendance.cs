@@ -8,7 +8,11 @@
         public string StudentUserId { get; set; } //identity userid 
         public DateTime StartedAt { get; set; }
 
+        public DateTime ExpiresAt { get; set; }  //for autosubmit answer based on exam durations
+
         public DateTime? SubmittedAt { get; set; }
+
+
 
         public int Score { get; set; }
 

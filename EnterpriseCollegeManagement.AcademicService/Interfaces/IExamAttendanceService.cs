@@ -14,5 +14,9 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
         Task<ExamAttendanceResponseDto> PublishResultAsync(int attendanceId, string actorUserId); //admin/teacher publish result 1st 
 
         Task<StudentExamResultResponseDto?> GetStudentResultAsync(int examId, string studentUserId);
+
+        Task<List<ExamSubmissionResponseDto>> GetExamSubmissionsAsync(int examId);
+
+        Task ProcessExpiredExamsAsync();   //autosubmit answer 
     }
 }

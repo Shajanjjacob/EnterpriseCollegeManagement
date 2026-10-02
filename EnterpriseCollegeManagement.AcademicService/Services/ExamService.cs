@@ -179,6 +179,8 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             };
         }
 
+       
+
         public async Task<ExamResponseDto> UpdateExamAsync(int id, CreateExamRequestDto request, string actorUserId)
         {
             _logger.LogInformation( "Updating exam. ExamId: {ExamId}, ActorUserId: {ActorUserId}",id, actorUserId);
@@ -240,6 +242,76 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 CourseName = coursesubjectexists.Course.Name,
                 SubjectName = coursesubjectexists.Subject.Name,
                 Semester = coursesubjectexists.Semester,
+                Title = exam.Title,
+                Description = exam.Description,
+                DurationMinutes = exam.DurationMinutes,
+                TotalMarks = exam.TotalMarks,
+                IsPublished = exam.IsPublished,
+                CreatedDate = exam.CreatedDate,
+                UpdatedDate = exam.UpdatedDate
+            };
+        }
+
+        public async Task<ExamResponseDto> PublishExamAsync(int examId, string actorUserId)
+        {
+            _logger.LogInformation("Publishing exam. ExamId: {ExamId}, ActorUserId: {ActorUserId}", examId, actorUserId);
+            var exam = await _context.Exams.Include(x => x.courseSubject)
+                .ThenInclude(x => x.Course)
+                .Include(x => x.courseSubject)
+                .ThenInclude(x => x.Subject)
+                .FirstOrDefaultAsync(x => x.Id == examId && !x.IsDeleted);
+            if(exam == null)
+            {
+                _logger.LogWarning("Exam publish failed. Exam not found. ExamId: {ExamId}",examId);
+
+                throw new NotFoundException("Exam not found.");
+            }
+            if(exam.IsPublished)
+            {
+                _logger.LogWarning("Exam publish failed. Exam is already published. ExamId: {ExamId}", examId);
+
+                throw new BadRequestException("Exam is already published.");
+            }
+
+            var examquestions = await _context.Questions.AsNoTracking()
+                 .Where(x => x.ExamId == examId && !x.IsDeleted).ToListAsync();
+
+
+            if(examquestions.Count == 0)
+            {
+                _logger.LogWarning("Exam publish failed. No questions found. ExamId: {ExamId}",examId);
+
+                throw new BadRequestException("Cannot publish exam because no questions are available.");
+            }
+
+            var totalQuestionMark = examquestions.Sum(x => x.Marks);
+
+            if(totalQuestionMark != exam.TotalMarks)
+            {
+                _logger.LogWarning("Exam publish failed. Question marks do not match exam total marks. ExamId: {ExamId}, ExamTotalMarks: {ExamTotalMarks}, QuestionTotalMarks: {QuestionTotalMarks}",
+                    examId,
+                    exam.TotalMarks,
+                    totalQuestionMark);
+
+                throw new BadRequestException( $"Cannot publish exam because question marks total " + $"({totalQuestionMark}) does not match exam total marks " +
+                    $"({exam.TotalMarks}).");
+            }
+
+            exam.IsPublished = true;
+            exam.UpdatedBy = actorUserId;
+            exam.UpdatedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Exam published successfully. ExamId: {ExamId}, ActorUserId: {ActorUserId}", exam.Id, actorUserId);
+
+            return new ExamResponseDto
+            {
+                Id = exam.Id,
+                CourseSubjectId = exam.CourseSubjectId,
+                CourseName = exam.courseSubject.Course.Name,
+                SubjectName = exam.courseSubject.Subject.Name,
+                Semester = exam.courseSubject.Semester,
                 Title = exam.Title,
                 Description = exam.Description,
                 DurationMinutes = exam.DurationMinutes,
