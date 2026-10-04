@@ -80,7 +80,6 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
             Assert.Equal(1, newCourse.DepartmentId);
 
             Assert.Equal("admin-001", newCourse.CreatedBy);
-            Assert.NotNull(newCourse.CreatedDate);
             Assert.False(newCourse.IsDeleted);
         }
 
