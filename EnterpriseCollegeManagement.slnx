@@ -12,6 +12,7 @@
     <Project Path="EnterpriseCollegeManagement.IdentityService/EnterpriseCollegeManagement.IdentityService.csproj" />
     <Project Path="EnterpriseCollegeManagement.Portal/EnterpriseCollegeManagement.Portal.csproj" />
     <Project Path="EnterpriseCollegeManagement.StudentService/EnterpriseCollegeManagement.StudentService.csproj" />
+    <Project Path="EnterpriseCollegeManagement.TeacherService/EnterpriseCollegeManagement.TeacherService.csproj" Id="75dcb199-ab14-4885-a24b-d8694e982bff" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="EnterpriseCollegeManagement.AcademicService.Tests/EnterpriseCollegeManagement.AcademicService.Tests.csproj" Id="e78eb7f1-a89a-4700-a912-16d98f0f6829" />
