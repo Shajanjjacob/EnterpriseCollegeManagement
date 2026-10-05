@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EnterpriseCollegeManagement.TeacherService.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnterpriseCollegeManagement.TeacherService.Data
 {
@@ -8,5 +9,9 @@ namespace EnterpriseCollegeManagement.TeacherService.Data
         {
 
         }
+
+        public DbSet<Teacher> Teachers { get; set; }
+
+        public DbSet<TeacherCourseSubject> TeacherCourseSubjects { get; set; }
     }
 }
