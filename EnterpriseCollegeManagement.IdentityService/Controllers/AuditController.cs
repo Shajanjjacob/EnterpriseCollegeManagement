@@ -27,5 +27,22 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpPost("create")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateAuditLog([FromBody] CreateAuditLogRequestDto request)
+        {
+            await _auditService.LogAsync(
+                request.UserId,
+                request.Action,
+                request.EntityName,
+                request.EntityId,
+                request.Description,
+                request.OldValues,
+                request.NewValues);
+
+            return Ok();   // to post data comeing from other services 
+        }
     }
 }

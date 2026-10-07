@@ -53,16 +53,26 @@ namespace EnterpriseCollegeManagement.TeacherService.Services
             return subject;
         }
 
-        public async Task<List<CourseSubjectResponseDto>> GetSubjectsByCourseIdAsync(int courseId)
+        public async Task<CourseSubjectResponseDto?> GetCourseSubjectByIdAsync(int courseSubjectId)
         {
-            _logger.LogInformation("Requesting subjects for course from AcademicService. CourseId: {CourseId}",courseId);
+            _logger.LogInformation("Requesting subjects for course from AcademicService. CourseId: {CourseId}", courseSubjectId);
 
-            var response = await _httpClient.GetAsync($"api/CourseSubject/course/{courseId}");
+            var response = await _httpClient.GetAsync($"api/CourseSubject/{courseSubjectId}");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning( "CourseSubject not found in AcademicService. CourseSubjectId: {CourseSubjectId}", courseSubjectId);
+
+                return null;
+            }
+
 
             response.EnsureSuccessStatusCode();
-            var courseSubjects = await response.Content.ReadFromJsonAsync<List<CourseSubjectResponseDto>>();
+            var courseSubjects = await response.Content.ReadFromJsonAsync<CourseSubjectResponseDto>();
 
-            return courseSubjects ?? new List<CourseSubjectResponseDto>();
+            return courseSubjects;
+
+           
         }
     }
 }

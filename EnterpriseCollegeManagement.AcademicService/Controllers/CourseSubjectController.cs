@@ -69,5 +69,25 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
                 Message = "Subject removed from course successfully."
             });
         }
+
+        [HttpGet("{courseSubjectId:int}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetCourseSubjectById(int courseSubjectId)
+        {
+            _logger.LogInformation("Get CourseSubject request received. CourseSubjectId: {CourseSubjectId}", courseSubjectId);
+
+            var result = await _courseSubjectService.GetCourseSubjectByIdAsync(courseSubjectId);
+
+            if (result == null)
+            {
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "CourseSubject not found."
+                });
+            }
+
+            return Ok(result);
+        }
     }
 }

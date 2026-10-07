@@ -4,6 +4,7 @@ using EnterpriseCollegeManagement.TeacherService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EnterpriseCollegeManagement.TeacherService.Migrations
 {
     [DbContext(typeof(TeacherDbContext))]
-    partial class TeacherDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261005171756_AddTeacherProfilePhoto")]
+    partial class AddTeacherProfilePhoto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

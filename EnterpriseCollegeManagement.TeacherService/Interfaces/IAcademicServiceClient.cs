@@ -8,6 +8,6 @@ namespace EnterpriseCollegeManagement.TeacherService.Interfaces
 
         Task<SubjectResponseDto?> GetSubjectByIdAsync(int subjectId);
 
-        Task<List<CourseSubjectResponseDto>> GetSubjectsByCourseIdAsync(int courseId);
+        Task<CourseSubjectResponseDto?> GetCourseSubjectByIdAsync(int courseSubjectId);
     }
 }

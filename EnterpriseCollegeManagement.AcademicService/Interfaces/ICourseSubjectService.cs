@@ -10,5 +10,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Interfaces
         Task<List<CourseSubjectResponseDto>> GetSubjectsByCourseIdAsync(int courseId);
 
         Task<bool> RemoveSubjectFromCourseAsync(int id);
+
+        Task<CourseSubjectResponseDto?> GetCourseSubjectByIdAsync(int courseSubjectId);
     }
 }

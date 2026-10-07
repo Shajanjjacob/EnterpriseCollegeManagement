@@ -81,6 +81,32 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             return response;
         }
 
+        public async Task<CourseSubjectResponseDto?> GetCourseSubjectByIdAsync(int courseSubjectId)
+        {
+            _logger.LogInformation("Getting CourseSubject. CourseSubjectId: {CourseSubjectId}",courseSubjectId);
+
+            var courseSubject = await _context.CoursesSubjects.Include(x => x.Course)
+                .Include(x=> x.Subject).AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == courseSubjectId);
+            if(courseSubject == null)
+            {
+                _logger.LogWarning("CourseSubject not found. CourseSubjectId: {CourseSubjectId}",courseSubjectId);
+
+                return null;
+            }
+
+            return new CourseSubjectResponseDto
+            {
+                Id = courseSubject.Id,
+                CourseId = courseSubject.CourseId,
+                CourseName = courseSubject.Course.Name,
+                SubjectId = courseSubject.SubjectId,
+                SubjectName = courseSubject.Subject.Name,
+                Semester = courseSubject.Semester
+
+            };
+        }
+
         public async Task<List<CourseSubjectResponseDto>> GetSubjectsByCourseIdAsync(int courseId)
         {
 

@@ -31,6 +31,10 @@ builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<TeacherDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DbContext")));
 
+//DI
+
+builder.Services.AddScoped<ITeacherService, TeacherService>();
+builder.Services.AddScoped<ITeacherCourseSubjectService, TeacherCourseSubjectService>();
 
 
 
@@ -50,6 +54,11 @@ builder.Services.AddHttpClient<IStudentServiceClient, StudentServiceClient>(clie
 builder.Services.AddHttpClient<IAcademicServiceClient, AcademicServiceClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:AcademicService"]!);
+});
+
+builder.Services.AddHttpClient<IAuditServiceClient, AuditServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:IdentityService"]!);
 });
 
 

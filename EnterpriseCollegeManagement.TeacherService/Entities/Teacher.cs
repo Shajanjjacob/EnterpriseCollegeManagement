@@ -14,6 +14,8 @@
 
         public string Phone { get; set; } = string.Empty;
 
+        public string? ProfilePhotoUrl { get; set; }  //phote url 
+
         public bool IsActive { get; set; } = true;
 
        

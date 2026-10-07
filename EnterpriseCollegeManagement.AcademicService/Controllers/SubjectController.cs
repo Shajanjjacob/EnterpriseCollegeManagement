@@ -104,7 +104,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Controllers
 
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Teacher,Student")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSubjectById(int id)
         {
             _logger.LogInformation("Get subject request received. SubjectId: {SubjectId}", id);
