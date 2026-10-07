@@ -17,5 +17,6 @@
   <Folder Name="/tests/">
     <Project Path="EnterpriseCollegeManagement.AcademicService.Tests/EnterpriseCollegeManagement.AcademicService.Tests.csproj" Id="e78eb7f1-a89a-4700-a912-16d98f0f6829" />
     <Project Path="EnterpriseCollegeManagement.StudentService.Tests/EnterpriseCollegeManagement.StudentService.Tests.csproj" Id="89f53c7a-e082-4123-be22-de3ecf2583fd" />
+    <Project Path="EnterpriseCollegeManagement.TeacherService.Tests/EnterpriseCollegeManagement.TeacherService.Tests.csproj" Id="80b6abcf-df52-4c94-bf05-9012b53c66a0" />
   </Folder>
 </Solution>
