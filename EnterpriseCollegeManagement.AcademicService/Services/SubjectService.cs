@@ -170,7 +170,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             {
                 _logger.LogInformation( "Subject not found in Redis cache. Fetching from database. SubjectId: {SubjectId}", id);
             }
-
+            ////
             var subject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);  
             
             if(subject == null)

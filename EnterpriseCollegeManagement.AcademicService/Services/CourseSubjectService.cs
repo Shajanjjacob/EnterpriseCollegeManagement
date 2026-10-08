@@ -5,6 +5,7 @@ using EnterpriseCollegeManagement.AcademicService.Entities;
 using EnterpriseCollegeManagement.AcademicService.Exceptions;
 using EnterpriseCollegeManagement.AcademicService.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EnterpriseCollegeManagement.AcademicService.Services
 {
@@ -12,11 +13,13 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
     {
         private readonly AcademicDbContext _context;
         private readonly ILogger<CourseSubjectService> _logger;
+        private readonly IRedisCacheService _redisCacheService;
 
-        public CourseSubjectService(AcademicDbContext context, ILogger<CourseSubjectService> logger)
+        public CourseSubjectService(AcademicDbContext context, ILogger<CourseSubjectService> logger, IRedisCacheService redisCacheService)
         {
             _context = context;
             _logger = logger;
+            _redisCacheService = redisCacheService;
 
         }
         public async Task<CourseSubjectResponseDto> AssignSubjectToCourseAsync(CreateCourseSubjectRequestDto request)
@@ -85,6 +88,18 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
         {
             _logger.LogInformation("Getting CourseSubject. CourseSubjectId: {CourseSubjectId}",courseSubjectId);
 
+            ///Redis
+            var cacheKey = $"coursesubject:{courseSubjectId}";
+            var cachedCourseSubject = await _redisCacheService.GetAsync(cacheKey);
+            if(cachedCourseSubject != null)
+            {
+                _logger.LogInformation("CourseSubject found in Redis cache. CourseSubjectId: {CourseSubjectId}", courseSubjectId);
+               return JsonSerializer.Deserialize<CourseSubjectResponseDto>(cachedCourseSubject);
+            }
+
+            _logger.LogInformation("CourseSubject not found in Redis cache. Fetching from database. CourseSubjectId: {CourseSubjectId}", courseSubjectId);
+
+            //get from data base 
             var courseSubject = await _context.CoursesSubjects.Include(x => x.Course)
                 .Include(x=> x.Subject).AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == courseSubjectId);
@@ -95,7 +110,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 return null;
             }
 
-            return new CourseSubjectResponseDto
+           var response = new  CourseSubjectResponseDto
             {
                 Id = courseSubject.Id,
                 CourseId = courseSubject.CourseId,
@@ -105,6 +120,14 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 Semester = courseSubject.Semester
 
             };
+
+            //Redis
+            var courseSubjectJson = JsonSerializer.Serialize(response);
+            await _redisCacheService.SetAsync(cacheKey, courseSubjectJson, TimeSpan.FromMinutes(20));
+
+            return response;
+
+
         }
 
         public async Task<List<CourseSubjectResponseDto>> GetSubjectsByCourseIdAsync(int courseId)
