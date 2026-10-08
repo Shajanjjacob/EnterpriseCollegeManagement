@@ -21,12 +21,14 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
     public class CourseServiceTests
     {
         private readonly Mock<IStudentServiceClient> _studentServiceClientMock;
+        private readonly Mock<IRedisCacheService> _redisCacheService;
         private readonly Mock<ILogger<CourseService>> _loggerMock;
 
         public CourseServiceTests()
         {
             _studentServiceClientMock = new Mock<IStudentServiceClient>();
             _loggerMock = new Mock<ILogger<CourseService>>();
+            _redisCacheService = new Mock<IRedisCacheService>();
         }
 
         private AcademicDbContext CreateDbContext()
@@ -60,7 +62,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
                 DepartmentId = 1
             };
 
-            var service = new CourseService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new CourseService(context, _loggerMock.Object, _studentServiceClientMock.Object,_redisCacheService.Object);
 
             var result = await service.CreateCourseAsync(request, "admin-001");
 
@@ -100,7 +102,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
             };
 
 
-            var service = new CourseService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new CourseService(context, _loggerMock.Object, _studentServiceClientMock.Object,_redisCacheService.Object);
 
             await Assert.ThrowsAsync<NotFoundException>(() => service.CreateCourseAsync(request, "admin-001"));
 
@@ -148,7 +150,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
             };
 
 
-            var service = new CourseService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new CourseService(context, _loggerMock.Object, _studentServiceClientMock.Object,_redisCacheService.Object);
 
             await Assert.ThrowsAsync<ConflictException>(() => service.CreateCourseAsync(request, "admin-002"));
 
@@ -186,7 +188,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
 
             _studentServiceClientMock.Setup(x => x.GetDepartmentByIdAsync(1)).ReturnsAsync(department);
 
-            var service = new CourseService(context,_loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new CourseService(context,_loggerMock.Object, _studentServiceClientMock.Object,_redisCacheService.Object);
 
             var result = await service.GetCourseByIdAsync(1);
 
@@ -240,7 +242,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
                 DepartmentId = 1
             };
 
-            var service = new CourseService(context,_loggerMock.Object,_studentServiceClientMock.Object);
+            var service = new CourseService(context,_loggerMock.Object,_studentServiceClientMock.Object,_redisCacheService.Object);
 
             var result = await service.UpdateCourseAsync(request, "admin-002",1);
 
@@ -287,7 +289,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
             context.Courses.Add(course);
             await context.SaveChangesAsync();
 
-            var service = new CourseService(context,_loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new CourseService(context,_loggerMock.Object, _studentServiceClientMock.Object,_redisCacheService.Object);
 
             var result = await service.DeleteCourseAsync(1, "admin-002");
 

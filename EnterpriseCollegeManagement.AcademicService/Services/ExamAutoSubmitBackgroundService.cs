@@ -13,11 +13,9 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(
-             CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation(
-                "Exam auto-submit background service started.");
+            _logger.LogInformation("Exam auto-submit background service started.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -25,18 +23,16 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 {
                     using var scope = _scopeFactory.CreateScope();
 
-                    var examAttendanceService = scope.ServiceProvider.GetRequiredService<IExamAttendanceService>();
+                    var examAttendanceService = scope.ServiceProvider.GetRequiredService<IExamAttendanceService>(); //passing interface and call function
 
-                    await examAttendanceService.ProcessExpiredExamsAsync();
+                    await examAttendanceService.ProcessExpiredExamsAsync(); //method 
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error occurred while processing expired exams.");
                 }
 
-                await Task.Delay(
-                    TimeSpan.FromSeconds(10),
-                    stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
 
             _logger.LogInformation("Exam auto-submit background service stopped.");

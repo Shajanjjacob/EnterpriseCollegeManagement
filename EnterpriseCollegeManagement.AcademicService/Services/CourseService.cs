@@ -7,6 +7,7 @@ using EnterpriseCollegeManagement.AcademicService.Exceptions;
 using EnterpriseCollegeManagement.AcademicService.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
+using System.Text.Json;
 
 namespace EnterpriseCollegeManagement.AcademicService.Services
 {
@@ -15,13 +16,17 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
         private readonly AcademicDbContext _context;
         private readonly ILogger<CourseService> _logger;
         private readonly IStudentServiceClient _studentServiceClient;
+
+        private readonly IRedisCacheService _redisCacheService; //added readis interface 
       
 
-        public CourseService(AcademicDbContext context, ILogger<CourseService> logger, IStudentServiceClient studentServiceClient)
+        public CourseService(AcademicDbContext context, ILogger<CourseService> logger, IStudentServiceClient studentServiceClient,
+            IRedisCacheService redisCacheService)
         {
             _context = context;
             _logger = logger;
             _studentServiceClient = studentServiceClient;
+            _redisCacheService = redisCacheService;
             
         }
 
@@ -116,6 +121,23 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
         {
             _logger.LogInformation("Get course by ID started. CourseId: {CourseId}", id);
 
+            //REDIS
+            var cacheKey = $"course:{id}";  // made a key based on course id 
+
+            var cachedCourse = await _redisCacheService.GetAsync(cacheKey); //calling function to get 
+
+            if(cachedCourse != null) //if data is in cache
+            {
+                _logger.LogInformation("Course found in Redis cache. CourseId: {CourseId}",id);
+
+                return JsonSerializer.Deserialize<CourseResponse?>(cachedCourse); //convert json text into dtos formate (c# object)
+            }
+
+            if (cachedCourse == null)
+            {
+                _logger.LogInformation("Course not found in Redis cache. Fetching from database. CourseId: {CourseId}",id);
+            }
+
             var course = await _context.Courses.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
             if(course == null)
             {
@@ -141,6 +163,11 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
                 DepartmentId = course.DepartmentId,
                 DepartmentName = department.Name
             };
+            //REDIS
+            //if data is not in cache then 
+
+            var courseJson = JsonSerializer.Serialize(response); //covert dtos to json 
+            await _redisCacheService.SetAsync(cacheKey, courseJson,TimeSpan.FromMinutes(20)); //set value in redis using key 
 
             return response;
         }

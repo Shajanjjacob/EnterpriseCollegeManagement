@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using StackExchange.Redis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +38,8 @@ builder.Services.AddHttpClient<IStudentServiceClient, StudentServiceClient>(clie
         builder.Configuration["Services:StudentServiceUrl"]!);
 });
 
+
+
 //DI
 
 builder.Services.AddScoped<ICourseService, CourseService>();
@@ -51,6 +54,26 @@ builder.Services.AddScoped<IQuizGenerationService, QuizGenerationService>();
 builder.Services.AddScoped<IAIQuizClient, GeminiQuizClient>(); //AI
 
 builder.Services.AddHostedService<ExamAutoSubmitBackgroundService>();  //background service for autosubmit exams
+//redis 
+builder.Services.AddSingleton<IConnectionMultiplexer>(re =>
+
+//IConnectionMultiplexer => this connection object tht allow our appplication to communicate with redis
+//singletone => reuse redis connection rather than creating a new connection for every request.
+
+{
+    var connectionString = builder.Configuration["Redis:ConnectionString"];
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Redis connection string is missing.");
+    }
+
+
+    return ConnectionMultiplexer.Connect(connectionString!);
+
+});
+
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>(); 
 
 builder.Services.AddDbContext<AcademicDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("AcademicDb")));
 
