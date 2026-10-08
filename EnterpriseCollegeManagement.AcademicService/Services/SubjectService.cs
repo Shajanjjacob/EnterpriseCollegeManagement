@@ -6,6 +6,7 @@ using EnterpriseCollegeManagement.AcademicService.Exceptions;
 using EnterpriseCollegeManagement.AcademicService.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
+using System.Text.Json;
 
 namespace EnterpriseCollegeManagement.AcademicService.Services
 {
@@ -14,12 +15,15 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
         private readonly AcademicDbContext _context;
         private readonly ILogger<SubjectService> _logger;
         private readonly IStudentServiceClient _studentServiceClient;
+        private readonly IRedisCacheService _redisCacheService;
 
-        public SubjectService(AcademicDbContext context, ILogger<SubjectService> logger, IStudentServiceClient studentServiceClient)
+        public SubjectService(AcademicDbContext context, ILogger<SubjectService> logger, IStudentServiceClient studentServiceClient,
+            IRedisCacheService redisCacheService)
         {
             _context = context;
             _logger = logger;
             _studentServiceClient = studentServiceClient;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<SubjectResponseDto> CreateSubjectAsync(CreateSubjectRequestDto request, string actorUserId)
@@ -153,6 +157,20 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
         {
             _logger.LogInformation( "Get subject by ID started. SubjectId: {SubjectId}", id);
 
+            //Redis
+
+            var cacheKey = $"subject:{id}";
+            var cachedSubject = await _redisCacheService.GetAsync(cacheKey);
+            if(cachedSubject != null)
+            {
+               return JsonSerializer.Deserialize<SubjectResponseDto>(cachedSubject);
+            }
+
+            if(cachedSubject == null)
+            {
+                _logger.LogInformation( "Subject not found in Redis cache. Fetching from database. SubjectId: {SubjectId}", id);
+            }
+
             var subject = await _context.Subjects.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);  
             
             if(subject == null)
@@ -183,6 +201,8 @@ namespace EnterpriseCollegeManagement.AcademicService.Services
 
             };
 
+            var subjectJson = JsonSerializer.Serialize(response);
+            await _redisCacheService.SetAsync(cacheKey, subjectJson, TimeSpan.FromMinutes(20));
             return response;
         }
 

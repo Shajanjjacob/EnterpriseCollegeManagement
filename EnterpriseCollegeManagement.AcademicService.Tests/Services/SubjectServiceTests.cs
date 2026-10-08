@@ -20,6 +20,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
     {
         private readonly Mock<IStudentServiceClient> _studentServiceClientMock;
         private readonly Mock<ILogger<SubjectService>> _loggerMock;
+        private readonly Mock<IRedisCacheService> _redisCacheService;
 
         public SubjectServiceTests()
         {
@@ -58,7 +59,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
 
             };
 
-            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object,_redisCacheService.Object);
 
             var result = await service.CreateSubjectAsync(request, "admin-001");
 
@@ -98,7 +99,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
                 DepartmentId = 1
             };
 
-            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object, _redisCacheService.Object);
 
             await Assert.ThrowsAsync<NotFoundException>(() => service.CreateSubjectAsync(request, "admin-001"));
 
@@ -143,7 +144,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
                 DepartmentId = 1
             };
 
-            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object, _redisCacheService.Object);
 
            await Assert.ThrowsAsync<ConflictException>(() => service.CreateSubjectAsync(subject, "admin-002"));
 
@@ -179,7 +180,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
 
             _studentServiceClientMock.Setup(x => x.GetDepartmentByIdAsync(1)).ReturnsAsync(department);
 
-            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object, _redisCacheService.Object);
 
             var result = await service.GetSubjectByIdAsync(1);
 
@@ -228,7 +229,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
                 DepartmentId = 1
             };
 
-            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object, _redisCacheService.Object);
 
             var result = await service.UpdateSubjectAsync(1, request, "admin-002");
 
@@ -270,7 +271,7 @@ namespace EnterpriseCollegeManagement.AcademicService.Tests.Services
             context.Add(existingsubject);
             await context.SaveChangesAsync();
 
-            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object);
+            var service = new SubjectService(context, _loggerMock.Object, _studentServiceClientMock.Object, _redisCacheService.Object);
 
             var result = await service.DeleteSubjectAsync("admin-002", 1);
 
