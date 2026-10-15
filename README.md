@@ -51,6 +51,9 @@ The project is being developed with a focus on:
 - 🌐 Google authentication
 - 🛡️ Role-based authorization
 - 🧠 AI-powered exam question generation (Google Gemini)
+- ⚡ Redis caching for frequently-read academic data
+- 👨‍🏫 Teacher profile management and course–subject assignment
+- 📝 Assignment submission with AI-assisted review and feedback (Gemini)
 - 🚀 Docker-based deployment readiness
 - 🧪 Automated unit testing
 - 📦 Clean and maintainable architecture
@@ -89,13 +92,34 @@ The project is being developed with a focus on:
          │ Google Login     │   │                  │   │                  │
          └──────────────────┘   └──────────────────┘   └──────────────────┘
                                           │
-                                          ▼
-                               ┌──────────────────────┐
-                               │  AssignmentService  │
-                               │                      │
-                               │  Assignment Domain   │
-                               └──────────────────────┘
+                  ┌───────────────────────┴───────────────────────┐
+                  ▼                                               ▼
+         ┌──────────────────┐                            ┌──────────────────┐
+         │ TeacherService   │                            │ AssignmentService│
+         │                  │                            │ Assignments      │
+         │ Teacher Profiles │                            │ Submissions      │
+         │ Course Mapping   │                            │ PDF Uploads      │
+         │ Profile Photos   │                            │ AI Review        │
+         └──────────────────┘                            └──────────────────┘
 ```
+
+## 🔗 Service-to-Service Communication
+
+Services own their data and talk to each other over REST using typed
+`HttpClient` clients registered with `AddHttpClient<TInterface, TImplementation>()`:
+
+| Caller | Calls | Client |
+|---|---|---|
+| StudentService | IdentityService | `IdentityServiceClient` |
+| AcademicService | StudentService | `StudentServiceClient` |
+| TeacherService | IdentityService | `IdentityServiceClient` |
+| TeacherService | StudentService | `StudentServiceClient` |
+| TeacherService | AcademicService | `AcademicServiceClient` |
+| TeacherService | Audit logging | `AuditServiceClient` |
+| AssignmentService | TeacherService | `TeacherServiceClient` |
+| AssignmentService | AcademicService | `AcademicServiceClient` |
+| AssignmentService | StudentService | `StudentServiceClient` |
+| AssignmentService | Audit logging | `AuditServiceClient` |
 
 ---
 
@@ -104,19 +128,17 @@ The project is being developed with a focus on:
 ```text
 EnterpriseCollegeManagement
 │
-├── src
-│   ├── EnterpriseCollegeManagement.AcademicService
-│   ├── EnterpriseCollegeManagement.ApiGateway
-│   ├── EnterpriseCollegeManagement.AssignmentService
-│   ├── EnterpriseCollegeManagement.IdentityService
-│   ├── EnterpriseCollegeManagement.Portal
-│   └── EnterpriseCollegeManagement.StudentService
-│
-├── tests
-│   └── EnterpriseCollegeManagement.StudentService.Tests
-│
-├── docs
-├── docker
+├── EnterpriseCollegeManagement.IdentityService         ✅ Completed
+├── EnterpriseCollegeManagement.StudentService          ✅ Completed
+├── EnterpriseCollegeManagement.StudentService.Tests    ✅ 12 tests
+├── EnterpriseCollegeManagement.AcademicService         ✅ Completed
+├── EnterpriseCollegeManagement.AcademicService.Tests   ✅ 50 tests
+├── EnterpriseCollegeManagement.TeacherService          ✅ Completed
+├── EnterpriseCollegeManagement.TeacherService.Tests    ✅ 10 tests
+├── EnterpriseCollegeManagement.AssignmentService       ✅ Completed (unit tests planned)
+├── EnterpriseCollegeManagement.ApiGateway              ⏳ Planned
+├── EnterpriseCollegeManagement.Portal                  ⏳ Planned
+├── EnterpriseCollegeManagement.slnx
 └── README.md
 ```
 
@@ -138,6 +160,7 @@ EnterpriseCollegeManagement
 | External Authentication | Google |
 | Authorization | Role-Based Authorization |
 | Generative AI | Google Gemini API |
+| Caching | Redis (StackExchange.Redis) |
 | API Gateway | YARP |
 | Logging | Serilog |
 | API Documentation | Swagger / OpenAPI |
@@ -467,6 +490,30 @@ DepartmentService also has automated tests covering the main business flows:
 - ✅ Successful department update
 - ✅ Preventing deletion when active students are assigned
 
+## 🧪 AcademicService Unit Testing
+
+AcademicService has the largest test suite — **50 tests** across Course,
+Subject, Exam, Question, and ExamAttendance services (xUnit, Moq, EF Core InMemory).
+
+Key scenarios covered:
+
+- ✅ Course/Subject creation with department-not-found and duplicate-code conflict handling
+- ✅ Exam creation, update, soft deletion, and publishing (question marks must match exam total marks)
+- ✅ Question validation — invalid marks rejected, and published exams cannot be edited or have questions removed
+- ✅ Starting an exam — only for published exams, once per student, and only when the student's course, department, and semester match
+- ✅ Submitting an exam — all questions must be answered, duplicate submission blocked
+- ✅ **Auto-submission of expired exams** (including `ProcessExpiredExamsAsync`)
+- ✅ Result publishing rules — exam must be submitted, result cannot be published twice, students only see published results
+
+## 🧪 TeacherService Unit Testing
+
+TeacherService has **10 tests** covering:
+
+- ✅ Teacher profile creation, and rejection when the Identity user is not a Teacher
+- ✅ Self-service profile retrieval, update, and profile-photo upload
+- ✅ Course–subject assignment, duplicate-assignment conflict, and missing course–subject handling
+- ✅ Listing assigned course–subjects and soft-deleting an assignment
+
 ---
 
 # 🛡️ Security
@@ -602,17 +649,145 @@ continuously to detect exams whose attendance window has expired and
 auto-submits them, ensuring students are graded on their in-progress
 answers instead of being left in an unsubmitted state.
 
+### ⚡ Redis Caching
+
+AcademicService uses Redis as a cache-aside (read-through) cache for frequently
+requested reference data, reducing repeated SQL Server queries.
+
+Implemented:
+
+- ✅ Cache-aside reads for course, subject, and course–subject lookups by ID
+  (keys: `course:{id}`, `subject:{id}`, `coursesubject:{id}`)
+- ✅ DTOs serialized to JSON and stored with a 20-minute expiry
+- ✅ A single shared `IConnectionMultiplexer` registered as a singleton
+- ✅ `IRedisCacheService` abstraction (`Get` / `Set` / `Remove`) so services stay
+  testable — it is mocked in the unit tests
+
+Planned improvements:
+
+- ⏳ Remove cached entries when a course, subject, or course–subject is updated or deleted
+- ⏳ Fail open — fall back to the database if Redis is unavailable
+- ⏳ Unit tests that verify cache hit/miss behaviour
+
+**Status: ✅ Completed**
+
+## 👨‍🏫 TeacherService
+
+Responsible for:
+
+- Teacher profile management (each profile is linked to an Identity user through `UserId`)
+- Teacher self-service: view/update own profile and upload a profile photo
+- Assigning teachers to course–subject combinations
+- Admin-controlled teacher updates
+- Audit-friendly records (created/updated/deleted by + timestamps) with soft delete
+
+### 🔌 API Endpoints
+
+| Method | Endpoint | Role | Description |
+|---|---|---|---|
+| POST | `/api/Teacher/create-profile` | Admin | Create a teacher profile for an existing Identity user |
+| GET | `/api/Teacher/me` | Teacher | View own profile |
+| PUT | `/api/Teacher/me` | Teacher | Update own profile |
+| POST | `/api/Teacher/me/profile-photo` | Teacher | Upload profile photo |
+| PUT | `/api/Teacher/{userId}` | Admin | Admin update of a teacher |
+| POST | `/api/TeacherCourseSubject/assign` | Admin | Assign a teacher to a course–subject |
+| GET | `/api/TeacherCourseSubject/teacher/{teacherId}` | Admin, Teacher | View a teacher's assignments |
+| DELETE | `/api/TeacherCourseSubject/teacher/{teacherId}/course-subject/{courseSubjectId}` | Admin | Remove an assignment |
+
+### 🧱 Design Notes
+
+- Layered structure: Controllers → Services → EF Core (`TeacherDbContext`), with DTOs for every request/response
+- JWT bearer authentication with role-based `[Authorize(Roles = ...)]` on every endpoint
+- Typed clients to IdentityService, StudentService, AcademicService, and audit logging
+- `GlobalExceptionMiddleware` with custom exceptions (`NotFound`, `Conflict`, `BadRequest`, `Unauthorized`)
+- Serilog logging and Swagger with a JWT bearer scheme
+- Soft delete (`IsDeleted`, `DeletedBy`, `DeletedDate`) and audit columns on entities
+- 3 EF Core migrations: `InitialCreate`, `AddTeacherCourseSubject`, `AddTeacherProfilePhoto`
+
 **Status: ✅ Completed**
 
 ## 📝 AssignmentService
 
 Responsible for:
 
-- Assignments
-- Assignment management
-- Assignment-related business operations
+- Assignment creation, publishing, and management by teachers
+- Student assignment submission (text and/or PDF upload)
+- Teacher grading and feedback
+- **AI-assisted assignment review** — an AI-generated mark suggestion and feedback draft that the teacher can accept or ignore
+- Audit-friendly records with soft delete
 
-**Status: ⏳ Planned**
+### 🔌 API Endpoints
+
+| Method | Endpoint | Role | Description |
+|---|---|---|---|
+| POST | `/api/Assignment` | Admin, Teacher | Create an assignment |
+| PUT | `/api/Assignment/{id}` | Admin, Teacher | Update an assignment |
+| GET | `/api/Assignment/{id}` | Admin, Teacher | Get an assignment |
+| GET | `/api/Assignment/my-assignments` | Admin, Teacher | List the caller's assignments |
+| PATCH | `/api/Assignment/{id}/publish` | Admin, Teacher | Publish an assignment |
+| DELETE | `/api/Assignment/{id}` | Admin, Teacher | Soft-delete an assignment |
+| POST | `/api/AssignmentSubmission/submit` | Student | Submit text and/or a PDF |
+| GET | `/api/AssignmentSubmission/my-submissions` | Student | List own submissions |
+| GET | `/api/AssignmentSubmission/assignment/{assignmentId}/submissions` | Teacher, Admin | List submissions for an assignment |
+| GET | `/api/AssignmentSubmission/{id}` | Student, Teacher, Admin | Get one submission |
+| PUT | `/api/AssignmentSubmission/{id}/grade` | Teacher, Admin | Grade a submission and give feedback |
+| POST | `/api/AssignmentSubmission/assignment/{assignmentId}/submission/{submissionId}/ai-review` | Teacher, Admin | Get an AI review suggestion |
+
+### 🧠 AI Assignment Review
+
+The review endpoint gives teachers a **suggestion**, never a final grade.
+
+```text
+Teacher requests AI review
+        │
+        ▼
+Authorize: only the assignment's owning teacher (or an Admin)
+        │
+        ▼
+Collect submission content: typed text + text extracted from the PDF (PdfPig)
+        │
+        ▼
+Build prompt: assignment title, requirements, max marks, and the
+student's work wrapped in <student_submission> tags
+        │
+        ▼
+Gemini (structured JSON schema, temperature 0.2)
+        │
+        ▼
+Validate the response: all fields present, marks between 0 and max marks
+        │
+        ▼
+Return: suggested marks, summary, strengths, improvements, suggested feedback
+        │
+        ▼
+Teacher decides → grades through the separate PUT .../grade endpoint
+```
+
+Design decisions:
+
+- ✅ **Human in the loop** — the AI never writes marks to the database; grading is a separate teacher action
+- ✅ **Provider-agnostic** — `IAssignmentReviewClient` hides the Gemini implementation (`GeminiAssignmentReviewClient`)
+- ✅ **Structured output** — a JSON response schema is sent to Gemini and the reply is validated before it is returned
+- ✅ **Prompt-injection resistance** — student text is delimited and the prompt tells the model to treat it as data, ignore instructions inside it, and not invent evidence
+- ✅ **Output validation** — incomplete responses and marks outside `0..MaxMarks` are rejected
+- ✅ **Clear failure for scanned PDFs** — if no text can be extracted, the teacher is told OCR would be required
+
+### 📎 Submission and File Rules
+
+- A student can submit only to a **published** assignment, **before the due date**, and **once**
+- A submission needs text, a PDF, or both
+- Uploads: **PDF only, maximum 5 MB**, PDF signature check, stored under a generated GUID file name (never the client's file name)
+
+### 🧱 Design Notes
+
+- Layered structure: Controllers → Services → EF Core (`AssignmentDbContext`), DTOs for every request/response
+- JWT bearer authentication with role-based authorization on every endpoint
+- Typed clients to TeacherService, AcademicService, StudentService, and audit logging
+- `GlobalExceptionMiddleware`, Serilog, and Swagger with a JWT bearer scheme
+- EF Core migration: `InitialAssignmentSchema`
+- Packages: `Google.GenAI` (Gemini), `PdfPig` (PDF text extraction)
+
+**Status: ✅ Completed (unit tests planned)**
 
 ---
 
@@ -632,7 +807,10 @@ Planned routing:
 /api/users/*       → IdentityService
 /api/students/*    → StudentService
 /api/academic/*    → AcademicService
-/api/assignments/* → AssignmentService
+/api/teacher/*     → TeacherService
+/api/teachercoursesubject/* → TeacherService
+/api/assignment/*  → AssignmentService
+/api/assignmentsubmission/* → AssignmentService
 ```
 
 **Status: ⏳ Planned**
@@ -766,6 +944,10 @@ Planned container structure:
 ┌──────────────────────┐
 │  AssignmentService   │
 └──────────────────────┘
+
+┌──────────────────────┐
+│        Redis         │
+└──────────────────────┘
 ```
 
 **Status: ⏳ Planned**
@@ -876,6 +1058,40 @@ application logs.
 
 ---
 
+# ⚙️ Configuration and Running Locally
+
+Services read their settings from **.NET User Secrets** — `appsettings.json` is intentionally
+empty, so no keys or connection strings are committed to the repository.
+
+Example for AssignmentService:
+
+```bash
+cd EnterpriseCollegeManagement.AssignmentService
+
+dotnet user-secrets set "ConnectionStrings:AssignmentDb" "<SQL Server connection string>"
+dotnet user-secrets set "Jwt:Key"      "<signing key, 32+ characters>"
+dotnet user-secrets set "Jwt:Issuer"   "<issuer>"
+dotnet user-secrets set "Jwt:Audience" "<audience>"
+dotnet user-secrets set "AI:Gemini:ApiKey" "<your Gemini API key>"
+dotnet user-secrets set "ServiceUrls:TeacherService"  "https://localhost:<port>"
+dotnet user-secrets set "ServiceUrls:AcademicService" "https://localhost:<port>"
+dotnet user-secrets set "ServiceUrls:IdentityService" "https://localhost:<port>"
+dotnet user-secrets set "ServiceUrls:StudentService"  "https://localhost:<port>"
+
+dotnet ef database update
+dotnet run
+```
+
+Notes:
+
+- `Jwt:Key`, `Jwt:Issuer`, and `Jwt:Audience` must match across services, because every service validates tokens issued by IdentityService
+- `AI:Gemini:Model` is optional and overrides the default Gemini model
+- The other services follow the same pattern — check each service's `Program.cs` for the keys it reads
+- AcademicService also needs `Redis:ConnectionString`. For local development, run Redis in Docker (`docker run -d --name ecm-redis -p 6379:6379 redis:7`) and use `localhost:6379`
+- Never commit API keys, signing keys, or uploaded student files
+
+---
+
 # 📊 Project Status
 
 | Component | Status |
@@ -883,10 +1099,15 @@ application logs.
 | 🔐 IdentityService | ✅ Completed |
 | 🎓 StudentService | ✅ Completed |
 | 📚 AcademicService (Exams + AI Quiz Generation) | ✅ Completed |
-| 📝 AssignmentService | ⏳ Planned |
+| ⚡ Redis Caching (AcademicService) | 🚧 In Progress |
+| 👨‍🏫 TeacherService | ✅ Completed |
+| 📝 AssignmentService (+ AI Assignment Review) | ✅ Completed |
 | 🌐 API Gateway | ⏳ Planned |
 | 🖥️ Portal | ⏳ Planned |
-| 🧪 Student/Department Unit Testing | ✅ Completed |
+| 🧪 StudentService Unit Testing (12 tests) | ✅ Completed |
+| 🧪 AcademicService Unit Testing (50 tests) | ✅ Completed |
+| 🧪 TeacherService Unit Testing (10 tests) | ✅ Completed |
+| 🧪 AssignmentService Unit Testing | ⏳ Planned |
 | 🐳 Docker | ⏳ Planned |
 | 🔄 CI/CD | ⏳ Planned |
 | 🌍 Production Deployment | ⏳ Planned |
@@ -902,10 +1123,13 @@ application logs.
 [x] StudentService + Department Management + Unit Tests
         │
         ▼
-[x] AcademicService + Exam Module + AI Quiz Generation (Gemini)
+[x] AcademicService + Exam Module + AI Quiz Generation (Gemini) + Unit Tests
         │
         ▼
-[ ] AssignmentService
+[x] TeacherService + Course-Subject Assignment + Unit Tests
+        │
+        ▼
+[x] AssignmentService + AI Assignment Review (Gemini)
         │
         ▼
 [ ] API Gateway
@@ -938,9 +1162,11 @@ main
  │
  ├── feature/academic-service      ✅ Merged
  │
- ├── feature/assignment-service      ⏳ Next
+ ├── feature/teacher-service       ✅ Merged
  │
- ├── feature/api-gateway
+ ├── feature/assignment-service    ✅ Completed (pending merge to main)
+ │
+ ├── feature/api-gateway           ⏳ Next
  │
  └── feature/portal
 ```
@@ -1047,6 +1273,7 @@ The primary goals of this project are to demonstrate practical experience with:
 - Role-based authorization
 - Google authentication
 - Generative AI integration for content generation (Google Gemini)
+- Distributed caching with Redis
 - Audit logging
 - API Gateway architecture
 - ASP.NET Core MVC
@@ -1071,6 +1298,7 @@ EnterpriseCollegeManagement
 - JWT
 - Google Authentication
 - Google Gemini AI
+- Redis
 - YARP
 - Serilog
 - Docker
