@@ -14,5 +14,7 @@ namespace EnterpriseCollegeManagement.TeacherService.Interfaces
         Task<TeacherResponseDto> UpdateTeacherAsync(AdminUpdateTeacherRequestDto request, string userId, string actorUserId);
 
         Task<TeacherResponseDto> UploadProfilePhotoAsync(string profilePhotoUrl, string userId);
+
+        Task<int?> GetTeacherIdByUserIdAsync(string userId);
     }
 }

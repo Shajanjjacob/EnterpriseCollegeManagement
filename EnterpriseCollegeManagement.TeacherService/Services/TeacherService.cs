@@ -5,6 +5,7 @@ using EnterpriseCollegeManagement.TeacherService.Entities;
 using EnterpriseCollegeManagement.TeacherService.Exceptions;
 using EnterpriseCollegeManagement.TeacherService.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog.Core;
 using System.Text.Json;
 
 namespace EnterpriseCollegeManagement.TeacherService.Services
@@ -137,6 +138,25 @@ namespace EnterpriseCollegeManagement.TeacherService.Services
             };
 
 
+        }
+
+        public async Task<int?> GetTeacherIdByUserIdAsync(string userId)
+        {
+            _logger.LogInformation("Getting Teacher profile ID. UserId: {UserId}", userId);
+
+            var teacher = await _context.Teachers.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.IsActive && !x.IsDeleted);
+
+            if(teacher == null)
+            {
+                _logger.LogWarning("Teacher profile not found. UserId: {UserId}", userId);
+
+                return null;
+            }
+
+            _logger.LogInformation("Teacher profile found. UserId: {UserId}, TeacherId: {TeacherId}", userId, teacher.Id);
+
+            return teacher.Id;
         }
 
         public async Task<TeacherResponseDto> UpdateMyProfileAsync(UpdateTeacherProfileRequestDto request, string userId)

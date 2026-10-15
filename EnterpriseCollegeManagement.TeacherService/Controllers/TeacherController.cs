@@ -168,5 +168,28 @@ namespace EnterpriseCollegeManagement.TeacherService.Controllers
                 Data = result
             });
         }
+
+        [HttpGet("user/{userId}/teacher-id")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTeacherIdByUserId(string userId)
+        {
+            _logger.LogInformation(
+                "Get Teacher ID request received. UserId: {UserId}",
+                userId);
+
+            var teacherId = await _teacherService
+                .GetTeacherIdByUserIdAsync(userId);
+
+            if (teacherId == null)
+            {
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = "Teacher profile not found."
+                });
+            }
+
+            return Ok(teacherId);
+        }
     }
 }

@@ -10,5 +10,7 @@ namespace EnterpriseCollegeManagement.TeacherService.Interfaces
         Task<List<TeacherCourseSubjectResponseDto>> GetAssignedCourseSubjectsAsync(int teacherId);
 
         Task  RemoveCourseSubjectAsync(int teacherId,int courseSubjectId,string actorUserId);
+
+        Task<bool> IsCourseSubjectAssignedToTeacherAsync(int teacherId, int courseSubjectId);
     }
 }

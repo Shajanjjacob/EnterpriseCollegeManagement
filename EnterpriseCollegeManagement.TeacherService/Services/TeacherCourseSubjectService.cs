@@ -222,6 +222,36 @@ namespace EnterpriseCollegeManagement.TeacherService.Services
 
         }
 
+        public async Task<bool> IsCourseSubjectAssignedToTeacherAsync(int teacherId, int courseSubjectId)
+        {
+            _logger.LogInformation("Checking CourseSubject assignment. TeacherId: {TeacherId}, CourseSubjectId: {CourseSubjectId}",teacherId,
+        courseSubjectId);
+
+            var teacherExists = await _context.Teachers.AsNoTracking().AnyAsync(x => x.Id == teacherId && !x.IsDeleted);
+
+            if (!teacherExists)
+            {
+                _logger.LogWarning("Teacher not found. TeacherId: {TeacherId}", teacherId);
+
+                return false;
+            }
+
+            var isAssigned = await _context.TeacherCourseSubjects.AsNoTracking().AnyAsync(x =>  x.TeacherId == teacherId && x.CourseSubjectId == courseSubjectId &&
+                    !x.IsDeleted);
+
+            if (!isAssigned)
+            {
+                _logger.LogWarning("CourseSubject is not assigned to teacher. TeacherId: {TeacherId}, CourseSubjectId: {CourseSubjectId}", teacherId, courseSubjectId);
+
+                return false;
+            }
+
+            _logger.LogInformation("CourseSubject assignment verified successfully. TeacherId: {TeacherId}, CourseSubjectId: {CourseSubjectId}", teacherId,
+                courseSubjectId);
+
+            return true;
+        }
+
         public async Task RemoveCourseSubjectAsync(int teacherId, int courseSubjectId, string actorUserId)
         {
             _logger.LogInformation("Removing CourseSubject assignment. TeacherId: {TeacherId}, CourseSubjectId: {CourseSubjectId}, ActorUserId: {ActorUserId}",

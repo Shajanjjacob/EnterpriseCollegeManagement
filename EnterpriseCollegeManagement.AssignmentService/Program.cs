@@ -1,5 +1,8 @@
 using EnterpriseCollegeManagement.AssignmentService.Data;
+using EnterpriseCollegeManagement.AssignmentService.Helpers;
+using EnterpriseCollegeManagement.AssignmentService.Interfaces;
 using EnterpriseCollegeManagement.AssignmentService.Middleware;
+using EnterpriseCollegeManagement.AssignmentService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -29,6 +32,44 @@ builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<AssignmentDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDb")));
 
+//Service - Service
+
+builder.Services.AddHttpClient<ITeacherServiceClient, TeacherCourseSubjectService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:TeacherService"]
+         ?? throw new InvalidOperationException("TeacherService URL is not configured."));
+});
+
+builder.Services.AddHttpClient<IAcademicServiceClient, AcademicServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:AcademicService"]
+        ?? throw new InvalidOperationException("AcademicService URL is not configured."));
+});
+
+builder.Services.AddHttpClient<IAuditServiceClient, AuditServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:IdentityService"]
+        ?? throw new InvalidOperationException("AuditService URL is not configured."));
+});
+
+builder.Services.AddHttpClient<IStudentServiceClient, StudentServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:StudentService"]
+        ?? throw new InvalidOperationException("StudentService URL is not configured."));
+});
+
+
+//DI
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IAssignmentSubmissionService , AssignmentSubmissionService>();
+
+builder.Services.AddScoped<PdfTextExtractor>();//pdf file text extractor 
+
+builder.Services.AddScoped<IAssignmentReviewService, AssignmentReviewService>();
+
+builder.Services.AddScoped<IAssignmentReviewClient, GeminiAssignmentReviewClient>();
+
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>(); //local file storage
 
 //JWT
 builder.Services.AddAuthentication(options =>

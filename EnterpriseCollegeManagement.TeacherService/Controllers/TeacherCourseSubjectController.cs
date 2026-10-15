@@ -77,6 +77,24 @@ namespace EnterpriseCollegeManagement.TeacherService.Controllers
                 Message = "CourseSubject assignment removed successfully."
             });
         }
+
+        [HttpGet("teacher/{teacherId:int}/course-subject/{courseSubjectId:int}/assigned")]
+        [AllowAnonymous]
+        public async Task<IActionResult> IsCourseSubjectAssigned(int teacherId, int courseSubjectId)
+        {
+            _logger.LogInformation("Checking teacher CourseSubject assignment. TeacherId: {TeacherId}, CourseSubjectId: {CourseSubjectId}",teacherId,
+                courseSubjectId);
+
+            var isAssigned = await _teacherCourseSubjectService.IsCourseSubjectAssignedToTeacherAsync(teacherId, courseSubjectId);
+
+            return Ok(new
+            {
+                Success = true,
+                IsAssigned = isAssigned
+            });
+        }
+
+
     }
 }
 
