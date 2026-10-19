@@ -126,6 +126,11 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
+    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer
+    {
+        Url = "/academic" //api gateway ///api/subject/1 => /academic/api/Student/1
+    });
+
     options.AddSecurityDefinition(
         "Bearer",
         new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -158,9 +163,14 @@ builder.Services.AddSwaggerGen(options =>
 
 
 
+//health checkup 
+
+builder.Services.AddHealthChecks();
 
 
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 
@@ -175,10 +185,22 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapHealthChecks("/health"); //health
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+//app.MapGet("/api/Test/slow", async () =>
+//{
+//    await Task.Delay(TimeSpan.FromSeconds(20));
+
+//    return Results.Ok(new
+//    {
+//        Message = "Response received after 20 seconds"  (timeout testing)
+//    });
+//});
 
 app.Run();

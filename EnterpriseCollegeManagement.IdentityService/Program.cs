@@ -97,6 +97,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.AddServer(new OpenApiServer
+    {
+        Url = "/identity" //for api gateway (/auth/login => /identity/auth/login)
+    });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -122,6 +127,11 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+//health checkup 
+
+builder.Services.AddHealthChecks();
+
 
 var app = builder.Build();
 
@@ -158,6 +168,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapHealthChecks("/health"); //health
 
 app.UseAuthentication();
 

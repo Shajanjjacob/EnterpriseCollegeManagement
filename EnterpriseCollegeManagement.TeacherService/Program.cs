@@ -108,6 +108,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
+    options.AddServer(
+    new Microsoft.OpenApi.Models.OpenApiServer
+    {
+        Url = "/teachers" //api gateway  ///api/profile/1 => /teachers/api/profile/1
+    });
+
     options.AddSecurityDefinition(
         "Bearer",
         new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -139,6 +145,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
+//health checkup 
+
+builder.Services.AddHealthChecks();
 
 
 
@@ -155,6 +164,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapHealthChecks("/health"); //health
 
 app.UseAuthentication();
 

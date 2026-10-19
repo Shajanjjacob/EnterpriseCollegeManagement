@@ -105,6 +105,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
+    // API Gateway prefix for StudentService
+    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer
+    {
+        Url = "/students" ///api/Student/1 => /students/api/Student/1
+    });
+
     options.AddSecurityDefinition(
         "Bearer",
         new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -136,6 +142,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
+//health checkup 
+
+builder.Services.AddHealthChecks();
 
 
 
@@ -156,6 +165,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapHealthChecks("/health"); //health
 
 app.UseAuthentication();
 
