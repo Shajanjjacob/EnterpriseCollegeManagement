@@ -20,3 +20,308 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+:root {
+    --college-navy: #092b50;
+    --college-blue: #0969c7;
+    --college-light: #f4f8fc;
+    --college-text: #1d2b3a;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    color: var(--college-text);
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #fff;
+}
+
+.brand-name {
+    color: var(--college-navy);
+    font-size: 1.05rem;
+}
+
+    .brand-name > span:last-child {
+        color: var(--college-blue);
+    }
+
+.brand-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin-right: 6px;
+    color: white;
+    background: var(--college-navy);
+    border-radius: 9px;
+}
+
+.navbar .nav-link {
+    color: #29384a;
+    font-weight: 500;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+
+    .navbar .nav-link:hover {
+        color: var(--college-blue);
+    }
+
+.btn-primary {
+    background-color: var(--college-blue);
+    border-color: var(--college-blue);
+}
+
+    .btn-primary:hover {
+        background-color: #0756a2;
+        border-color: #0756a2;
+    }
+
+.hero-section {
+    position: relative;
+    color: white;
+    background: linear-gradient(90deg, rgba(4, 27, 51, .94), rgba(4, 27, 51, .70)), url("https://placehold.co/1800x800/17365d/ffffff?text=College+Campus") center / cover no-repeat;
+}
+
+.min-vh-75 {
+    min-height: 540px;
+}
+
+.hero-content {
+    padding-top: 75px;
+    padding-bottom: 75px;
+}
+
+    .hero-content h1 {
+        max-width: 720px;
+        line-height: 1.15;
+        letter-spacing: -1px;
+    }
+
+        .hero-content h1 span {
+            color: #80bcff;
+        }
+
+    .hero-content .lead {
+        max-width: 620px;
+        color: #e0e9f4;
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+
+.hero-badge {
+    display: inline-block;
+    padding: 9px 15px;
+    color: #e9f3ff;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 50px;
+    font-size: .85rem;
+}
+
+.highlights-section {
+    padding: 28px 0;
+    background: #f0f6fd;
+}
+
+.highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 100%;
+}
+
+.highlight-icon,
+.course-icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--college-blue);
+    background: #e8f2ff;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.highlight-item h6 {
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.highlight-item p,
+.stats-section p {
+    margin-bottom: 0;
+    color: #667487;
+    font-size: .9rem;
+}
+
+.stats-section {
+    padding: 35px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+    .stats-section h2 {
+        margin-bottom: 5px;
+        color: var(--college-navy);
+        font-size: 2rem;
+        font-weight: 750;
+    }
+
+.section-padding {
+    padding: 80px 0;
+}
+
+.section-label {
+    color: var(--college-blue);
+    font-size: .78rem;
+    font-weight: 750;
+    letter-spacing: 1.5px;
+}
+
+.section-title {
+    color: var(--college-navy);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 750;
+    letter-spacing: -.6px;
+}
+
+.section-heading {
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.about-image img {
+    object-fit: cover;
+    min-height: 300px;
+}
+
+.content-card,
+.faculty-card,
+.testimonial-card {
+    padding: 28px;
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(20, 49, 80, .04);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+    .content-card:hover,
+    .faculty-card:hover,
+    .testimonial-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(20, 49, 80, .09);
+    }
+
+.course-icon {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 22px;
+    font-size: 1.1rem;
+}
+
+.content-card h5,
+.faculty-card h5 {
+    color: var(--college-navy);
+    font-weight: 700;
+}
+
+.content-card p {
+    min-height: 72px;
+    line-height: 1.7;
+}
+
+.card-link {
+    color: var(--college-blue);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+    .card-link:hover {
+        text-decoration: underline;
+    }
+
+.faculty-avatar {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #edf5ff;
+}
+
+.testimonial-card p {
+    margin: 18px 0;
+    color: #5b6878;
+    line-height: 1.8;
+}
+
+.testimonial-stars {
+    color: #efa900;
+    letter-spacing: 3px;
+    font-size: 1.1rem;
+}
+
+.cta-section {
+    padding: 55px 25px;
+    color: white;
+    background: linear-gradient(120deg, #092b50, #105b9d);
+    border-radius: 18px;
+}
+
+    .cta-section h2 {
+        font-weight: 750;
+    }
+
+    .cta-section p {
+        margin-top: 14px;
+        margin-bottom: 0;
+        color: #e2edfa;
+    }
+
+.site-footer {
+    margin-top: 30px;
+    color: #d9e4f0;
+    background: #071f39;
+}
+
+    .site-footer h5 {
+        color: white;
+    }
+
+@media (max-width: 767.98px) {
+    .hero-content {
+        padding-top: 60px;
+        padding-bottom: 60px;
+    }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+    .min-vh-75 {
+        min-height: 460px;
+    }
+
+    .section-padding {
+        padding: 55px 0;
+    }
+
+    .highlight-item {
+        align-items: flex-start;
+    }
+
+    .highlight-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .content-card p {
+        min-height: 0;
+    }
+}
