@@ -13,6 +13,6 @@ namespace EnterpriseCollegeManagement.IdentityService.Interfaces
         Task ForgotPasswordAsync(ForgotPasswordRequestDto request);
         Task ResetPasswordAsync(ResetPasswordRequestDto request);
 
-        Task<TokenResultDto> GoogleLoginAsync(string email, string googleUserId, string? name);
+        Task<GoogleLoginResponseDto> GoogleLoginAsync(string email, string googleUserId, string? name);
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Security.Claims;
 
 
@@ -16,15 +17,20 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService  _authService;
+        private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, ITokenService tokenService, ILogger<AuthController> logger)
+        private readonly GoogleLoginCodeStore _googleLoginCodeStore;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(IAuthService authService, ITokenService tokenService, ILogger<AuthController> logger, GoogleLoginCodeStore googleLoginCodeStore, IConfiguration configuration)
         {
             _authService = authService;
             _tokenService = tokenService;
             _logger = logger;
+            _googleLoginCodeStore = googleLoginCodeStore;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -33,7 +39,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         {
             var result = await _authService.RegisterAsync(request);
 
-           
+
             return Ok(result);
         }
 
@@ -43,7 +49,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         public async Task<IActionResult> Login(LoginRequestDto request)
         {
             var result = await _authService.LoginAsync(request);
-           
+
             return Ok(result);
         }
 
@@ -71,9 +77,9 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
 
         [HttpPut("change-password")]
         [Authorize]
-        public async Task<IActionResult> ChangePassword( [FromBody] ChangePasswordRequestDto request)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
         {
-            var userId =  User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning(
@@ -81,9 +87,9 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
 
                 return Unauthorized();
             }
-            await _authService.ChangePasswordAsync( userId,request);
+            await _authService.ChangePasswordAsync(userId, request);
 
-            
+
 
             return Ok(new
             {
@@ -96,7 +102,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
         {
-            _logger.LogInformation( "Forgot password request received for {Email}",request.Email);
+            _logger.LogInformation("Forgot password request received for {Email}", request.Email);
 
             await _authService.ForgotPasswordAsync(request);
 
@@ -127,12 +133,11 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
         {
             var properties = new AuthenticationProperties
             {
-                RedirectUri = "/api/Auth/google-callback"
+                //RedirectUri = "/api/Auth/google-callback"
+                RedirectUri = "/identity/api/Auth/google-callback"
             };
 
-            return Challenge(
-                properties,
-                GoogleDefaults.AuthenticationScheme);
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
 
@@ -169,20 +174,51 @@ namespace EnterpriseCollegeManagement.IdentityService.Controllers
                 });
             }
 
-            var tokenResult = await _authService.GoogleLoginAsync( email,googleUserId,name);
+            var tokenResult = await _authService.GoogleLoginAsync(email, googleUserId, name);
 
-            await HttpContext.SignOutAsync(
-                IdentityConstants.ExternalScheme);
 
-            return Ok(new
+            // Store token response and generate temporary handoff(BASED ON CODE FOR SHAREING TO FRONTEND)
+            var handoff = _googleLoginCodeStore.Store(tokenResult);  //calling that function 
+
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            var portalUrl = _configuration["PortalSettings:BaseUrl"];
+
+            if (string.IsNullOrWhiteSpace(portalUrl))
             {
-                Success = true,
-                Message = "Google login successful.",
-                Token = tokenResult.Token,
-                Expiration = tokenResult.Expiration,
-                RefreshToken = tokenResult.RefreshToken,
-                RefreshTokenExpiration = tokenResult.RefreshTokenExpiration
-            });
+                throw new InvalidOperationException("Portal BaseUrl is not configured.");
+            }
+
+            return Redirect($"{portalUrl.TrimEnd('/')}/Account/GoogleCallback?handoff={Uri.EscapeDataString(handoff)}");
+            //handoff code is redirect to frontend and Portal receives it through the callback parameter
+            // after that Portal sends that received code back to IdentityService and it check (like match code )
+        }
+
+        [HttpGet("google-token")]
+        public IActionResult GetGoogleLoginToken([FromQuery] string handoff) //handoff receive from portal 
+        {
+
+            if (string.IsNullOrWhiteSpace(handoff))
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Handoff value is required."
+                });
+            }
+
+            var isValid = _googleLoginCodeStore.TryTake(handoff, out var tokenResult);
+
+            if (!isValid || tokenResult == null)
+            {
+                return Unauthorized(new
+                {
+                    Success = false,
+                    Message = "Invalid or expired Google login request."
+                });
+            }
+
+            return Ok(tokenResult);
         }
     }
 }

@@ -6,12 +6,14 @@ using EnterpriseCollegeManagement.IdentityService.Interfaces;
 using EnterpriseCollegeManagement.IdentityService.Middleware;
 using EnterpriseCollegeManagement.IdentityService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +44,8 @@ builder.Services.AddScoped<IAuthService,AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddSingleton<GoogleLoginCodeStore>(); //handsoff code 
 
 ///register AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -133,6 +137,25 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddHealthChecks();
 
 
+//call back forwarding b/w identity and gateway
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedHost;
+
+    options.KnownProxies.Add(IPAddress.Loopback);
+    options.KnownProxies.Add(IPAddress.IPv6Loopback);
+
+    options.AllowedHosts.Add("localhost");
+});
+
+
+
+
+
+
 var app = builder.Build();
 
 //Role Seed confi
@@ -158,6 +181,9 @@ using (var scope = app.Services.CreateScope())
 
 
 // Configure the HTTP request pipeline.
+
+
+app.UseForwardedHeaders();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 

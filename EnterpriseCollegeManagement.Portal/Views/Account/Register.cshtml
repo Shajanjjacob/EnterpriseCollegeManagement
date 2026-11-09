@@ -1,0 +1,203 @@
+﻿@model EnterpriseCollegeManagement.Portal.Models.RegisterViewModel
+@inject IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container-fluid auth-page">
+    <div class="container">
+        <div class="row align-items-center min-vh-100 py-4">
+
+            <!-- Left section: College information -->
+            <div class="col-12 col-md-5 col-lg-4">
+                <div class="auth-info-panel">
+
+                    <h2>Student<br />Registration</h2>
+
+                    <p>Start your learning journey with us.</p>
+
+                    <hr />
+
+                    <div class="row align-items-center mb-4">
+                        <div class="col-3">
+                            <i class="bi bi-people-fill fs-2 text-primary"></i>
+                        </div>
+                        <div class="col-9">
+                            <p class="mb-0">Join a growing community</p>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-4">
+                        <div class="col-3">
+                            <i class="bi bi-book-half fs-2 text-primary"></i>
+                        </div>
+                        <div class="col-9">
+                            <p class="mb-0">Access quality education</p>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-4">
+                        <div class="col-3">
+                            <i class="bi bi-trophy-fill fs-2 text-primary"></i>
+                        </div>
+                        <div class="col-9">
+                            <p class="mb-0">Build your future</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Right section: Registration form -->
+            <div class="col-12 col-md-7 col-lg-8">
+                <div class="auth-form-section">
+
+                    <!-- College branding -->
+                    <div class="auth-brand">
+                        <i class="bi bi-mortarboard-fill text-primary fs-1"></i>
+
+                        <div>
+                            <h1>Enterprise College</h1>
+                            <p>Management System</p>
+                        </div>
+                    </div>
+
+                    <!-- Registration card -->
+                    <div class="auth-card">
+
+                        <h2 class="auth-title">Create Your Account</h2>
+
+                        <p class="auth-subtitle">
+                            Join our academic community as a student
+                        </p>
+
+                        <form asp-controller="Account" asp-action="Register"  method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <!-- First name -->
+                            <div class="mb-3">
+                                <label asp-for="FirstName"  class="form-label"></label>
+
+                                <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+
+                            <!-- Last name -->
+                            <div class="mb-3">
+                                <label asp-for="LastName" class="form-label"></label>
+
+                                <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+
+                                <input asp-for="Email" class="form-control" placeholder="Enter email address" />
+
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+
+                                <div class="password-input-group">
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="Create password" />
+
+                                    <button type="button"  class="password-toggle" onclick="togglePassword('Password', this)" aria-label="Show password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <!-- Confirm password -->
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+
+                                <div class="password-input-group">
+                                    <input asp-for="ConfirmPassword"type="password" class="form-control" placeholder="Confirm password" />
+
+                                    <button type="button" class="password-toggle" onclick="togglePassword('ConfirmPassword', this)" aria-label="Show confirm password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                Register
+                            </button>
+
+                        </form>
+
+                        <!-- Google registration -->
+                        <div class="auth-divider">
+                            <span></span>
+                            <p>Or register with</p>
+                            <span></span>
+                        </div>
+
+                        <a href="@($"{Configuration["ApiSettings:GatewayBaseUrl"]?.TrimEnd('/')}/identity/api/Auth/google-login")" class="auth-google-btn">
+
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                                 alt="Google"
+                                 width="21"
+                                 height="21" />
+
+                            <span>Continue with Google</span>
+                        </a>
+
+                        <!-- Login link -->
+                        <p class="auth-switch-link">
+                            Already have an account?
+
+                            <a asp-controller="Account" asp-action="Login">
+                                Login
+                            </a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <link rel="stylesheet" href="~/css/account/register.css" asp-append-version="true" /> 
+    @* to load external style.css file *@
+
+  <script>
+
+        function togglePassword(inputId, button) // 
+        {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector("i");
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+                button.setAttribute("aria-label", "Hide password");
+            } else {
+                input.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+                button.setAttribute("aria-label", "Show password");
+            }
+        }
+
+  </script>
+}

@@ -124,7 +124,7 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
             Console.WriteLine("======================================");
         }
 
-        public async Task<TokenResultDto> GoogleLoginAsync(string email, string googleUserId, string? name)
+        public async Task<GoogleLoginResponseDto> GoogleLoginAsync(string email, string googleUserId, string? name)
         {
             _logger.LogInformation( "Google login started for {Email}", email);
 
@@ -169,8 +169,21 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
             }
             var tokenResult = await _tokenService.GenerateTokenAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
 
-            return tokenResult;
+            return new GoogleLoginResponseDto
+            {
+                Success = true,
+                Message = "Google login successful.",
+                Email = user.Email,
+                Token = tokenResult.Token,
+                Expiration = tokenResult.Expiration,
+                RefreshToken = tokenResult.RefreshToken,
+                RefreshTokenExpiration = tokenResult.RefreshTokenExpiration,
+                Role = roles.FirstOrDefault()
+            };
+
+
 
         }
 
@@ -211,6 +224,11 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
 
             var tokenResult =  await _tokenService.GenerateTokenAsync(user);
 
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var role = roles.FirstOrDefault();
+
+
             await _auditService.LogAsync(
 
                 user.Id,
@@ -228,6 +246,12 @@ namespace EnterpriseCollegeManagement.IdentityService.Services
                 Message = "Login successful.", 
                 Token = tokenResult.Token,
                 Expiration = tokenResult.Expiration,
+                RefreshToken = tokenResult.RefreshToken,
+                RefreshTokenExpiration = tokenResult.RefreshTokenExpiration,
+                Role  = role
+                
+
+              
             };
 
            

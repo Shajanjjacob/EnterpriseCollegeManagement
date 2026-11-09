@@ -1,0 +1,126 @@
+﻿/* Main registration page */
+.auth-page {
+    min-height: 100vh;
+    background: linear-gradient( rgba(230, 242, 255, 0.78), rgba(255, 255, 255, 0.85) ), url('/images/college-campus.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Left information section */
+.auth-info-panel {
+    padding: 30px;
+    color: #17365d;
+}
+
+/* College branding */
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+    .auth-brand h1 {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .auth-brand p {
+        color: #718096;
+        margin-bottom: 0;
+    }
+
+/* Registration card */
+.auth-card {
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(25, 55, 90, 0.12);
+}
+
+/* Form headings */
+.auth-title {
+    text-align: center;
+    color: #17365d;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: #718096;
+    margin-bottom: 25px;
+}
+
+/* Google registration divider */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 25px 0;
+}
+
+    .auth-divider span {
+        flex: 1;
+        height: 1px;
+        background: #dce5f0;
+    }
+
+    .auth-divider p {
+        margin: 0;
+        color: #718096;
+        white-space: nowrap;
+    }
+
+/* Google button */
+.auth-google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #d7e0eb;
+    border-radius: 8px;
+    color: #263b53;
+    text-decoration: none;
+}
+
+/* Login link */
+.auth-switch-link {
+    text-align: center;
+    margin-top: 22px;
+    margin-bottom: 0;
+}
+
+.password-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d7e0eb;
+    border-radius: 8px;
+    background: #fff;
+    padding-right: 12px;
+}
+
+    .password-input-group .form-control {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+.password-toggle {
+    border: none;
+    background: transparent;
+    color: #718096;
+    cursor: pointer;
+    padding: 5px;
+}
+
+    .password-toggle i {
+        font-size: 20px;
+    }
+
+    .password-toggle:hover {
+        color: #2878df;
+    }
